@@ -1,6 +1,6 @@
 # Amazing Lockpicks
 
-[SKSE plugin] (https://www.nexusmods.com/skyrimspecialedition/mods/108832) that enables unique lockpick models
+[Skyrim SKSE plugin mod](https://www.nexusmods.com/skyrimspecialedition/mods/108832) that enables unique lockpick models
 
 ---
 
@@ -12,17 +12,19 @@ VR support pending addresses.
 [CommonLibSSE NG](https://github.com/CharmedBaryon/CommonLibSSE-NG) is a fork of the popular [powerof3 fork](https://github.com/powerof3/CommonLibSSE) of the _original_ `CommonLibSSE` library created by [Ryan McKenzie](https://github.com/Ryan-rsm-McKenzie) in [2018](https://github.com/Ryan-rsm-McKenzie/CommonLibSSE/commit/224773c424bdb8e36c761810cdff0fcfefda5f4a).
 
 # Credits
-```
-powerofthree / PO3 for Security Overhaul SKSE - Lock Variations (https://www.nexusmods.com/skyrimspecialedition/mods/58224) / Lock Variations (https://github.com/powerof3/LockVariations/)
-CharmedBaryon for CommonLibSSE-NG (https://github.com/CharmedBaryon/CommonLibSSE-NG)
-Parapets / Exit-9B for Ammo Enchanting - Craft Magical Arrows and Bolts (https://www.nexusmods.com/skyrimspecialedition/mods/79764) / AmmoEnchanting (https://github.com/Exit-9B/AmmoEnchanting)
-brofield for simpleini (https://github.com/brofield/simpleini)
-```
+
+powerofthree / powerof3 for [Security Overhaul SKSE - Lock Variations](https://www.nexusmods.com/skyrimspecialedition/mods/58224) / [Lock Variations](https://github.com/powerof3/LockVariations/)
+
+CharmedBaryon for [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG)
+
+Parapets / Exit-9B for Ammo Enchanting - [Craft Magical Arrows and Bolts](https://www.nexusmods.com/skyrimspecialedition/mods/79764) / [AmmoEnchanting](https://github.com/Exit-9B/AmmoEnchanting)
+
+brofield for [simpleini](https://github.com/brofield/simpleini)
+
 # User Requirements
 * [Address Library for SKSE](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
-	* Needed for SSE
-~~* [VR Address Library for SKSEVR](https://www.nexusmods.com/skyrimspecialedition/mods/58101)
-	* Needed for VR~~
+	* Needed for SE/AE
+
 # Building Requirements
 
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) (_the free Community edition_)
