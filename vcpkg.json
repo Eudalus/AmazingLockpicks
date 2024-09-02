@@ -1,0 +1,8 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "name": "amazinglockpicks",
+    "version-string": "3.0.0",
+    "dependencies": [
+        "commonlibsse-ng"
+    ]
+}
