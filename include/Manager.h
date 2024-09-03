@@ -2,6 +2,8 @@
 
 #include "LockData.h"
 #include "SimpleIni.h"
+#include "BSResource.h"
+
 /*
 class Manager : public ISingleton<Manager>
 {
@@ -112,7 +114,7 @@ public:
 	std::unordered_map<RE::FormID, int> eudaLockpickMap;  // formid key, int value indexes into eudaLockpickVector
 
 	RE::TESObjectMISC** currentLockpickSingleton;
-
+    //RE::BSResource::ModelID* lastLockpickHandle;
 	bool isLockpickHealthUpdating = false;
 	int  bestLockpickIndex = -1;
 	int  uniqueLockpickTotal = 0;

@@ -207,16 +207,53 @@ void Manager::HideLockpickModel(bool hide)
 
 RE::BSResource::ErrorCode Manager::ReloadLockpickModel()
 {
-	RE::NiPointer<RE::NiNode>                   nPointer;
+	RE::NiPointer<RE::NiNode> nPointer;
 	constexpr RE::BSModelDB::DBTraits::ArgsType args{};
-	auto                                        menuNow = RE::UI::GetSingleton()->GetMenu<RE::LockpickingMenu>(RE::LockpickingMenu::MENU_NAME);
+	auto menuNow = RE::UI::GetSingleton()->GetMenu<RE::LockpickingMenu>(RE::LockpickingMenu::MENU_NAME);
 
-	RE::LockpickingMenu::RUNTIME_DATA& dataNow = menuNow->GetRuntimeData();
-
-	const auto pickModelHandle = static_cast<RE::BSResource::ModelID*>(dataNow.lockpick);
+	//const auto pickModelHandle = static_cast<RE::BSResource::ModelID*>(dataNow.lockpick);
 	//const auto demandError = RE::BSModelDB::Demand(eudaLockpickVector.at(bestLockpickIndex).path.c_str(), nPointer, args);
 	//const auto demandError = RE::BSModelDB::Demand(eudaLockpickVector.at(bestLockpickIndex).path.c_str(), pickModelHandle->data, args);
 
+	if (menuNow)
+	{
+
+		//if (lastLockpickHandle)
+		//{
+  //          logger::info("PRE ---- LAST LOCKPICK HANDLE -> DATA REFERENCE COUNT: {}", lastLockpickHandle->data->GetRefCount());
+
+		//	//lastLockpickHandle->data->DeleteThis();
+
+		//	//while (lastLockpickHandle->data->AsNode()->GetChildren().size() > 0)
+		//	//{
+  // //             lastLockpickHandle->data->AsNode()->DetachChild(lastLockpickHandle->data->AsNode()->GetChildren()[0].get());
+		//	//}
+
+  //          const auto scene = RE::UI3DSceneManager::GetSingleton();
+  //          scene->DetachChild(lastLockpickHandle->data.get());
+  //          //lastLockpickHandle->data.reset();
+  //          lastLockpickHandle = nullptr;
+		//	//logger::info("POST --- LAST LOCKPICK HANDLE -> DATA REFERENCE COUNT: {}", lastLockpickHandle->data->GetRefCount());
+
+  //          //RE::BSResource::FreeRequestedModel(lastLockpickHandle);
+  //          //lastLockpickHandle->data.reset();
+  //          //lastLockpickHandle = nullptr;
+		//}
+
+        RE::LockpickingMenu::RUNTIME_DATA& dataNow = menuNow->GetRuntimeData();
+        auto lockpickHandle = static_cast<RE::BSResource::ModelID*>(dataNow.lockpick);
+
+		if (lockpickHandle)
+		{
+            const auto scene = RE::UI3DSceneManager::GetSingleton();
+            scene->DetachChild(lockpickHandle->data.get());
+            lockpickHandle = nullptr;
+		}
+
+		dataNow.pickTensionSound.Stop();
+
+		dataNow.init3DElements = false;
+	}
 	//if (demandError == RE::BSResource::ErrorCode::kNone &&RE::UI::GetSingleton()->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))
 	{
 		//auto menuNow = RE::UI::GetSingleton()->GetMenu<RE::LockpickingMenu>(RE::LockpickingMenu::MENU_NAME);

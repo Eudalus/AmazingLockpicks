@@ -3,7 +3,6 @@
 //#include "PCH\PCH.h"
 #include "Offset.h"
 
-// Rename to avoid conflict with CommonLib namespace RE
 namespace RE
 {
     // https://github.com/Exit-9B/AmmoEnchanting/blob/main/src/RE/BSResource.h

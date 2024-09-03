@@ -117,7 +117,7 @@ namespace EudaMessageUpdate
             */
 
 			if (currentManager->shouldUpdateModel) {
-				currentManager->HideLockpickModel(true);
+				//currentManager->HideLockpickModel(true);
 
 				//Model::Lockpick::RequestModel::thunk(Manager::GetSingleton()->eudaLockpickVector.at(Manager::GetSingleton()->bestLockpickIndex).path.c_str(), Manager::GetSingleton()->unknownArg02, Manager::GetSingleton()->unknownArg03);
 
