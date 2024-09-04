@@ -1,5 +1,6 @@
 #pragma once
 
+// AE Addresses
 namespace RE::Offset
 {
 	namespace Actor
