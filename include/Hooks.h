@@ -27,6 +27,19 @@ namespace stl
 
 namespace Model
 {
+	namespace Lock
+	{
+        struct RequestModel
+		{
+            static RE::BSResource::ErrorCode thunk(const char* a_modelPath, std::uintptr_t a_modelHandle,
+                                                   const RE::BSModelDB::DBTraits::ArgsType& a_traits);
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			static void Install();
+		};
+	}
+
 	namespace Lockpick
 	{
 		struct RequestModel
@@ -41,14 +54,17 @@ namespace Model
 	void Install();
 }
 
-namespace Sound
-{
-	void Install();
-}
-
-// move definitions into Hooks.cpp, create declarations here
 namespace EudaMessageUpdate
 {
+	struct EnterLockIntroHook
+	{
+        static std::uintptr_t thunk(RE::LockpickingMenu *menu, RE::NiControllerManager *niManager, RE::NiControllerSequence *niSequence);
+
+        static inline REL::Relocation<decltype(thunk)> func;
+
+        static void Hook();
+	};
+
 	// thunk returns void
 	struct EnterSoundEffectHookSE
 	{
@@ -120,6 +136,8 @@ namespace EudaMessageUpdate
 		static void Hook();
 	};
 
+///// ----- deprecated, debug, and testing functions -----
+    /*
 	struct UpdatePickHealthHook
 	{
 		static std::int32_t thunk(RE::LockpickingMenu* a1, std::int64_t a2, std::int64_t a3, std::int64_t a4);
@@ -154,7 +172,6 @@ namespace EudaMessageUpdate
 	class LockpickingMenuMovieHook
 	{
     public:
-		static inline float updateValue = 0;
 
 		static RE::UI_MESSAGE_RESULTS AdvanceMovie(RE::IMenu* menu, float a_interval, std::uint32_t a_currentTime);
 
@@ -162,4 +179,5 @@ namespace EudaMessageUpdate
 
 		static void Hook();
 	};
+	*/
 }

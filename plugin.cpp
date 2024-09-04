@@ -207,6 +207,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			EudaMessageUpdate::CanOpenLockpickingMenuHook::Hook();
 			EudaMessageUpdate::TryBeginLockPickingHook::Hook();
 			EudaMessageUpdate::UnknownSetupHook::Hook();
+            EudaMessageUpdate::EnterLockIntroHook::Hook();
 
 			#ifdef SKYRIM_AE
 				EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
@@ -338,7 +339,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		currentManager->RecountUniqueLockpickTotal();
 		currentManager->UpdateBestLockpickFromIndex(0);
 
-	} else if (a_message->type == SKSE::MessagingInterface::kNewGame && currentManager->isPostLoadComplete) {
+	}
+	/* else if (a_message->type == SKSE::MessagingInterface::kNewGame && currentManager->isPostLoadComplete)
+	{
 		logger::info("AmazingLockpicks.dll - inside function MessageHandler, else if message->type == kNewGame");
 
 		RE::TESObjectMISC* lockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
@@ -347,7 +350,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		currentManager->RecountUniqueLockpickTotal();
 		currentManager->UpdateBestLockpickFromIndex(0);
 
-	} else if (a_message->type == SKSE::MessagingInterface::kPostLoadGame && currentManager->isPostLoadComplete) {
+	} else if (a_message->type == SKSE::MessagingInterface::kPostLoadGame && currentManager->isPostLoadComplete)
+	{
 		logger::info("AmazingLockpicks.dll - inside function MessageHandler, else if message->type == kPostLoadGame");
 
 		RE::TESObjectMISC* lockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
@@ -355,7 +359,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		currentManager->UpdateLockpickSingleton(lockpickObject, currentManager->eudaLockpickMap.at(0xA));
 		currentManager->RecountUniqueLockpickTotal();
 		currentManager->UpdateBestLockpickFromIndex(0);
-	}
+	}*/
 }
 
 void TranslateLockLevel(RE::LOCK_LEVEL value, float& unmodifiedBreakSeconds, float& modifiedBreakSeconds)
