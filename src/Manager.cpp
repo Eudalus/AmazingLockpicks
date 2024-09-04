@@ -250,8 +250,8 @@ RE::BSResource::ErrorCode Manager::ReloadLockpickModel()
             lockpickHandle = nullptr;
 		}
 
-		dataNow.pickTensionSound.Stop();
-
+		//dataNow.pickTensionSound.Stop();
+		allowEnterAudio = false;
 		dataNow.init3DElements = false;
 	}
 	//if (demandError == RE::BSResource::ErrorCode::kNone &&RE::UI::GetSingleton()->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))

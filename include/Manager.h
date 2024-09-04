@@ -120,6 +120,7 @@ public:
 	int  uniqueLockpickTotal = 0;
 	bool isPostLoadComplete = false;
 	bool shouldUpdateModel = false;
+	bool allowEnterAudio = true;
 
 	const int   DEFAULT_LOCKPICK_QUALITY = 1000;
 	const float DEFAULT_LOCKPICK_WEIGHT = 0.0f;

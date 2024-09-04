@@ -4,6 +4,45 @@ cmake_minimum_required(VERSION 3.21)
 
 # Set your project name. This will be the name of your SKSE .dll file.
 project(amazinglockpicks VERSION 3.0.0 LANGUAGES CXX)
+set(VERSION 3.0.0 CACHE STRING "")
+set(VR_VERSION 1)
+set(AE_VERSION 1)
+
+#[[
+option(COPY_BUILD "Copy the build output to the Skyrim directory." TRUE)
+option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
+option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
+
+if(BUILD_SKYRIMAE)
+	add_compile_definitions(SKYRIM_AE)
+	add_compile_definitions(SKYRIM_SUPPORT_AE)
+	#set(CommonLibName "CommonLibSSE")
+	#set_from_environment(SkyrimAEPath)
+	#set(SkyrimPath ${SkyrimAEPath})
+	set(SkyrimVersion "Skyrim AE")
+	set(VERSION ${VERSION}.${AE_VERSION})
+elseif(BUILD_SKYRIMVR)
+	add_compile_definitions(SKYRIMVR)
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+	#set(CommonLibName "CommonLibVR")
+	#set_from_environment(SkyrimVRPath)
+	#set(SkyrimPath ${SkyrimVRPath})
+	set(SkyrimVersion "Skyrim VR")
+	set(VERSION ${VERSION}.${VR_VERSION})
+else()
+	#set(CommonLibName "CommonLibSSE")
+	#set_from_environment(Skyrim64Path)
+	#set(SkyrimPath ${Skyrim64Path})
+	set(SkyrimVersion "Skyrim SSE")
+endif()
+]]
+if (MSVC)
+	if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
+		add_compile_options(
+			/MP	# Build with Multiple Processes
+		)
+	endif ()
+endif ()
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)

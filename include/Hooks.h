@@ -14,6 +14,14 @@ namespace stl
         SKSE::AllocTrampoline(14);
         T::func = trampoline.write_call<5>(a_src, T::thunk);
     }
+
+	template <class T>
+    void write_thunk_branch(std::uintptr_t a_src)
+	{
+        auto& trampoline = SKSE::GetTrampoline();
+        SKSE::AllocTrampoline(14);
+        T::func = trampoline.write_branch<5>(a_src, T::thunk);
+    }
 }
 
 
@@ -41,6 +49,25 @@ namespace Sound
 // move definitions into Hooks.cpp, create declarations here
 namespace EudaMessageUpdate
 {
+	// thunk returns void
+	struct EnterSoundEffectHookSE
+	{
+        static void thunk(char *soundPath);
+
+		static inline REL::Relocation<decltype(thunk)> func;
+
+        static void Hook();
+	};
+
+	// thunk returns pointer that might be to RE::TESForm 
+	struct EnterSoundEffectHookAE
+	{
+        static std::uintptr_t thunk(char* soundPath);
+
+		static inline REL::Relocation<decltype(thunk)> func;
+
+        static void Hook();
+	};
 
 	/// <summary>
 	/// Uses a hook to make the Lockpicking Menu display the member variable uniqueLockpickTotal
@@ -105,7 +132,6 @@ namespace EudaMessageUpdate
 	class LockpickingMenuMessageHook
 	{
     public:
-		//static inline int counter = 0;
 
 		static RE::UI_MESSAGE_RESULTS ProcessMessage(RE::IMenu* menu, RE::UIMessage& a_message);
 
@@ -117,7 +143,6 @@ namespace EudaMessageUpdate
 	class EudaIMenuMessageHook
 	{
     public:
-		// static inline int counter = 0;
 
 		static RE::UI_MESSAGE_RESULTS ProcessMessage(RE::IMenu* menu, RE::UIMessage& a_message);
 
@@ -129,7 +154,6 @@ namespace EudaMessageUpdate
 	class LockpickingMenuMovieHook
 	{
     public:
-		//static inline int counter = 0;
 		static inline float updateValue = 0;
 
 		static RE::UI_MESSAGE_RESULTS AdvanceMovie(RE::IMenu* menu, float a_interval, std::uint32_t a_currentTime);

@@ -121,9 +121,47 @@ namespace Sound
 }
 */
 
-
 namespace EudaMessageUpdate 
 {
+    // EnterSoundEffectHook - SE version
+    void EnterSoundEffectHookSE::thunk(char* soundPath)
+    {
+        if (Manager::GetSingleton()->allowEnterAudio)
+        {
+            func(soundPath);
+        }
+
+        Manager::GetSingleton()->allowEnterAudio = true;
+    }
+
+    void EnterSoundEffectHookSE::Hook()
+    {
+        REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51087, 51967)};  // CanOpenLockpickingMenu
+
+        stl::write_thunk_branch<EudaMessageUpdate::EnterSoundEffectHookSE>(target.address() + OFFSET(0xB5, 0xAC));  // PlaySoundEffect, should never call AE address
+    }
+
+    //EnterSoundEffectHook - AE version
+    std::uintptr_t EnterSoundEffectHookAE::thunk(char* soundPath)
+    {
+        if (Manager::GetSingleton()->allowEnterAudio)
+        {
+            Manager::GetSingleton()->allowEnterAudio = true;
+            return func(soundPath);
+        }
+
+        Manager::GetSingleton()->allowEnterAudio = true;
+
+        return NULL;
+    }
+
+    void EnterSoundEffectHookAE::Hook()
+    {
+        REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51087, 51967)};  // CanOpenLockpickingMenu
+
+        stl::write_thunk_branch<EudaMessageUpdate::EnterSoundEffectHookAE>(target.address() + OFFSET(0xB5, 0xAC));  // PlaySoundEffect, should never call SE address
+    }
+
     // UnknownSetupHook
     std::int32_t UnknownSetupHook::thunk(RE::Character* character, RE::TESBoundObject* lockpick)
 	{
@@ -142,7 +180,7 @@ namespace EudaMessageUpdate
 	{
         // return Manager::GetSingleton()->uniqueLockpickTotal;
         const auto currentManager = Manager::GetSingleton();
-
+        currentManager->allowEnterAudio = true;
         currentManager->shouldUpdateModel = false;
         const int value = currentManager->RecountAndUpdate();
         currentManager->HideLockpickModel(false);

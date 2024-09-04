@@ -208,6 +208,14 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			EudaMessageUpdate::TryBeginLockPickingHook::Hook();
 			EudaMessageUpdate::UnknownSetupHook::Hook();
 
+			#ifdef SKYRIM_AE
+				EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
+			#endif
+
+			#ifdef SKYRIM_SE
+                EudaMessageUpdate::EnterSoundEffectHookSE::Hook();
+			#endif
+
 			logger::info(
 				"AmazingLockpicks.dll - inside function MessageHandler, if message->type == kPostLoad - "
 				"LockpickingMenuMessageHook::Install() returned successfully");
