@@ -340,26 +340,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		currentManager->UpdateBestLockpickFromIndex(0);
 
 	}
-	/* else if (a_message->type == SKSE::MessagingInterface::kNewGame && currentManager->isPostLoadComplete)
+	else if (a_message->type == SKSE::MessagingInterface::kPostPostLoad && currentManager->isPostLoadComplete)
 	{
-		logger::info("AmazingLockpicks.dll - inside function MessageHandler, else if message->type == kNewGame");
-
-		RE::TESObjectMISC* lockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
-
-		currentManager->UpdateLockpickSingleton(lockpickObject, currentManager->eudaLockpickMap.at(0xA));
-		currentManager->RecountUniqueLockpickTotal();
-		currentManager->UpdateBestLockpickFromIndex(0);
-
-	} else if (a_message->type == SKSE::MessagingInterface::kPostLoadGame && currentManager->isPostLoadComplete)
-	{
-		logger::info("AmazingLockpicks.dll - inside function MessageHandler, else if message->type == kPostLoadGame");
-
-		RE::TESObjectMISC* lockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
-
-		currentManager->UpdateLockpickSingleton(lockpickObject, currentManager->eudaLockpickMap.at(0xA));
-		currentManager->RecountUniqueLockpickTotal();
-		currentManager->UpdateBestLockpickFromIndex(0);
-	}*/
+		// prevents reloading lock and shiv model each time LockpickingMenu's member variable is set to false to dynamically load a different lockpick model
+        Model::Lock::RequestModel::Install();
+	}
 }
 
 void TranslateLockLevel(RE::LOCK_LEVEL value, float& unmodifiedBreakSeconds, float& modifiedBreakSeconds)
@@ -414,10 +399,6 @@ float CalculatePickBreak(RE::LOCK_LEVEL lockLevel)
 				unmodifiedBreakSeconds) +
 			   unmodifiedBreakSeconds) *
 	       modifiedBreakSeconds;
-
-	//RE::Actor *player = RE::TESForm::LookupByID<RE::Actor>(0x14);
-
-	//player->GetActorRuntimeData().avStorage.baseValues.
 }
 
 /*
@@ -458,10 +439,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 }
 
 */
-
-
-
-
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {

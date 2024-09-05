@@ -33,7 +33,7 @@ RE::BSResource::ErrorCode Manager::ReloadLockpickModel()
             scene->DetachChild(lockpickHandle->data.get());
             lockpickHandle = nullptr;
 		}
-
+        allowLockIntro = false;
 		allowLockSwap = false;
 		allowEnterAudio = false;
 		dataNow.init3DElements = false;
@@ -73,7 +73,7 @@ int Manager::RecountAndUpdate()
 		// set to default
 		*currentLockpickSingleton = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
 		bestLockpickIndex = eudaLockpickMap.at((*currentLockpickSingleton)->formID);
-		//shouldUpdateModel = true; /// debatable
+		//shouldUpdateModel = true; // debatable
 	}
 
 	return uniqueLockpickTotal;

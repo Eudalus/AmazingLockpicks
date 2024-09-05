@@ -57,14 +57,53 @@ namespace EudaMessageUpdate
     std::uintptr_t EnterLockIntroHook::thunk(RE::LockpickingMenu* menu, RE::NiControllerManager* niManager,
         RE::NiControllerSequence* niSequence)
     {
-        if (Manager::GetSingleton()->allowLockSwap)
+        const auto currentManager = Manager::GetSingleton();
+        auto& runtimeData = menu->GetRuntimeData();
+
+        if (currentManager->allowLockIntro)
         {
+            currentManager->originalLockRotationCenter.x = runtimeData.lockRotCenter.x;
+            currentManager->originalLockRotationCenter.y = runtimeData.lockRotCenter.y;
+            currentManager->originalLockRotationCenter.z = runtimeData.lockRotCenter.z;
+
             return func(menu, niManager, niSequence);
         }
 
-        Manager::GetSingleton()->allowLockSwap = true;
+        //niSequence->Activate(0, 1, 0.0, 0.0, nullptr, 0); // original index
+        //niSequence->startTime = 0;
+        //niSequence->lastTime = 0;
+        //niSequence->Activate(0, 1, 1.0, 0.0, nullptr, 0);
+        // niSequence->SetPhase(1, 1);
+            
+        //logger::info("LOCK ANGLE: {}", menu->GetRuntimeData().lockAngle);
+        //menu->GetRuntimeData().lockAngle = 0;
+
+
+        //menu->GetRuntimeData().currentLockSequence = menu->GetRuntimeData().lockRotate;
+        //menu->GetRuntimeData().currentLockSequence->Activate(0, 0, 0, 0, 0, 0);
+        //menu->GetRuntimeData().currentLockSequence->offset = 0;
+        //menu->GetRuntimeData().currentLockSequence->startTime = 0;
+        //menu->GetRuntimeData().currentLockSequence->SetPhase(0, true);
+        //menu->GetRuntimeData().currentLockSequence->Activate(0,1,1.0,0.0, nullptr, 0);
+        //menu->GetRuntimeData().currentLockSequence->Activate(0, 1, 0.0, 0.0, nullptr, 0);
+        //menu->GetRuntimeData().currentLockSequence->Deactivate(0.0, false);
+        //menu->GetRuntimeData().currentLockSequence.
+        //menu->GetRuntimeData().currentLockSequence->Deactivate(0,false);
+        //menu->GetRuntimeData().pickKeyTime = 0;
+        //menu->GetRuntimeData().lockKeyTime = 0;
+        //menu->GetRuntimeData().animationFinished = false;
+        //menu->GetRuntimeData().animating = true;
+        //menu->GetRuntimeData().animationFinished = true;
+
+        runtimeData.lockRotate->Activate(0, 1, 1.0, -1.0, 0, true);
+        runtimeData.lockRotCenter.x = currentManager->originalLockRotationCenter.x;
+        runtimeData.lockRotCenter.y = currentManager->originalLockRotationCenter.y;
+        runtimeData.lockRotCenter.z = currentManager->originalLockRotationCenter.z;
+
+        Manager::GetSingleton()->allowLockIntro = true;
 
         return NULL;
+        //return func(menu, niManager, menu->GetRuntimeData().currentLockSequence);
     }
 
     void EnterLockIntroHook::Hook()
@@ -132,9 +171,10 @@ namespace EudaMessageUpdate
         const auto currentManager = Manager::GetSingleton();
         currentManager->allowEnterAudio = true;
         currentManager->allowLockSwap = true;
+        currentManager->allowLockIntro = true;
         currentManager->shouldUpdateModel = false;
         const int value = currentManager->RecountAndUpdate();
-        currentManager->HideLockpickModel(false);
+        //currentManager->HideLockpickModel(false);
         currentManager->shouldUpdateModel = false;
 
         return value;
