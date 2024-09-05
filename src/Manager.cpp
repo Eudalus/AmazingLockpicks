@@ -144,105 +144,10 @@ int Manager::UpdateBestLockpickFromIndex(int indexValue = 0)
 	return UpdateLockpickSingleton(RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA), eudaLockpickMap.at(0xA));
 }
 
-void Manager::AttachNodes()
-{
-	auto menuNow = RE::UI::GetSingleton()->GetMenu<RE::LockpickingMenu>(RE::LockpickingMenu::MENU_NAME);
-
-	RE::LockpickingMenu::RUNTIME_DATA& dataNow = menuNow->GetRuntimeData();
-
-	const auto pickModelHandle = static_cast<RE::BSResource::ModelID*>(dataNow.lockpick);
-
-	// 0 -> 21
-	// with child[1] as rod 26
-	auto node21 = pickModelHandle->data->AsNode()->GetChildren()[0]->AsNode();
-
-	// with child[0] as body 23
-	auto node22 = node21->GetChildren()[0]->AsNode();
-
-	if (!nodesReady) {
-		// 26 now
-		Manager::GetSingleton()->originalRodNode = node21->GetChildren()[1];
-
-		// 23 now
-		Manager::GetSingleton()->originalBodyNode = node22->GetChildren()[0];
-
-		node21->CreateDeepCopy(Manager::GetSingleton()->pickRodNode);
-		node22->CreateDeepCopy(Manager::GetSingleton()->pickBodyNode);
-
-		RemoveNodes(Manager::GetSingleton()->pickRodNode);
-		RemoveNodes(Manager::GetSingleton()->pickBodyNode);
-
-		//Manager::GetSingleton()->pickRodNode->AsNode()->DetachChild(
-		//Manager::GetSingleton()->originalRodNode->AsTriShape());
-		//Manager::GetSingleton()->pickBodyNode->AsNode()->DetachChild(
-		//Manager::GetSingleton()->originalBodyNode->AsTriShape());
-
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.translate.x = 0;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.translate.y = 0;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.translate.z = 0;
-
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[0][0] = 1.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[0][1] = 0.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[0][2] = 0.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[1][0] = 0.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[1][1] = 1.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[1][2] = 0.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[2][0] = 0.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[2][1] = 0.0f;
-		Manager::GetSingleton()->pickRodNode->AsNode()->world.rotate.entry[2][2] = 1.0f;
-
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.translate.x = 0;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.translate.y = 0;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.translate.z = 0;
-
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[0][0] = 1.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[0][1] = 0.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[0][2] = 0.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[1][0] = 0.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[1][1] = 1.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[1][2] = 0.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[2][0] = 0.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[2][1] = 0.0f;
-		Manager::GetSingleton()->pickBodyNode->AsNode()->world.rotate.entry[2][2] = 1.0f;
-	}
-
-	Manager::GetSingleton()->originalRodNode->AsTriShape()->CreateDeepCopy(
-		Manager::GetSingleton()->pickRodTrishape);
-
-	Manager::GetSingleton()->originalBodyNode->AsTriShape()->CreateDeepCopy(
-		Manager::GetSingleton()->pickBodyTrishape);
-
-	node21->DetachChild2(Manager::GetSingleton()->originalRodNode->AsTriShape());
-	node22->DetachChild2(Manager::GetSingleton()->originalBodyNode->AsTriShape());
-
-	node21->AttachChild(Manager::GetSingleton()->pickRodNode->AsNode());
-	node22->AttachChild(Manager::GetSingleton()->pickBodyNode->AsNode());
-
-	Manager::GetSingleton()->pickRodNode->AsNode()->AttachChild(
-		Manager::GetSingleton()->pickRodTrishape->AsTriShape());
-	Manager::GetSingleton()->pickBodyNode->AsNode()->AttachChild(
-		Manager::GetSingleton()->pickBodyTrishape->AsTriShape());
-
-	nodesReady = true;
-}
-
-void Manager::RemoveNodes(RE::NiObjectPtr& node)
-{
-	int size = node->AsNode()->GetChildren().size();
-
-	logger::info("NUMBER OF NODES SIZE: {}", size);
-
-	for (int i = size - 1; i > 0; i--) {
-		logger::info("{} --- REMOVE NODE NAME: {}", i, node->AsNode()->GetChildren()[i]->name.c_str());
-		node->AsNode()->GetChildren()[i]->AsNode()->CullNode(true);
-		node->AsNode()->GetChildren()[i]->AsTriShape()->CullNode(true);
-		node->AsNode()->DetachChildAt(i);
-	}
-}
 
 /// <summary>
 /// Sorts the member variable eudaLockpickVector in descending order based on quality variable.
-/// With 0 being the highest quality and (eudaLockpickVector.size - 1) being the weakest quality
+/// With index 0 being the highest quality and index (eudaLockpickVector.size - 1) being the weakest quality
 /// </summary>
 void Manager::SortLockpicksByQuality()
 {
@@ -394,8 +299,8 @@ bool Manager::LoadLocks()
 	return !eudaLockpickVector.empty();
 }
 
-std::string Manager::GetLockpickModel(const char* a_fallbackPath) {
-    // reset
+std::string Manager::GetLockpickModel(const char* a_fallbackPath)
+{
 
     std::string path(a_fallbackPath);
 

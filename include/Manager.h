@@ -33,7 +33,6 @@ public:
 		static Manager singleton;
 		return std::addressof(singleton);
 	}
-	void AttachNodes();
 	bool LoadLocks();
 	void SortLockpicksByQuality();
 	int UpdateBestLockpickFromIndex(int startIndex);
@@ -44,7 +43,6 @@ public:
 	int RecountAndUpdate();
 	RE::BSResource::ErrorCode ReloadLockpickModel();
 	void HideLockpickModel(bool hide = true);
-	void RemoveNodes(RE::NiObjectPtr& node);
 
 	//std::string GetLockModel(const char* a_fallbackPath);
 	std::string GetLockpickModel(const char* a_fallbackPath);
@@ -114,7 +112,6 @@ public:
 	std::unordered_map<RE::FormID, int> eudaLockpickMap;  // formid key, int value indexes into eudaLockpickVector
 
 	RE::TESObjectMISC** currentLockpickSingleton;
-    //RE::BSResource::ModelID* lastLockpickHandle;
 	bool isLockpickHealthUpdating = false;
 	int  bestLockpickIndex = -1;
 	int  uniqueLockpickTotal = 0;
@@ -127,20 +124,6 @@ public:
 
 	const int   DEFAULT_LOCKPICK_QUALITY = 1000;
 	const float DEFAULT_LOCKPICK_WEIGHT = 0.0f;
-
-	RE::NiPointer<RE::NiObject> pickBodyNode = nullptr;
-	RE::NiPointer<RE::NiObject> pickRodNode = nullptr;
-
-	RE::NiPointer<RE::NiObject> pickBodyTrishape = nullptr;
-	RE::NiPointer<RE::NiObject> pickRodTrishape = nullptr;
-
-	RE::NiPointer<RE::NiObject> originalBodyNode = nullptr;
-	RE::NiPointer<RE::NiObject> originalRodNode = nullptr;
-
-	RE::TESObjectMISC** lockpickSingletonDoublePointer = nullptr;
-	RE::TESObjectMISC*  lockpickSingletonSinglePointer = nullptr;
-
-	bool nodesReady = false;
 
 	RE::BGSListForm*  eudaFormList;
 	const std::string EudaFormListString = "EudaLockpickFormList";

@@ -187,45 +187,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
 	const auto currentManager = Manager::GetSingleton();
 
-	if (a_message->type == SKSE::MessagingInterface::kPostLoad) {
-		logger::info("AmazingLockpicks.dll - inside function MessageHandler, if message->type == kPostLoad");
-
+	if (a_message->type == SKSE::MessagingInterface::kPostLoad)
+	{
 		currentManager->isPostLoadComplete = currentManager->LoadLocks();
-
-		if (currentManager->isPostLoadComplete) {
-			logger::info("AmazingLockpicks.dll - inside function MessageHandler, if message->type == kPostLoad - Manager::GetSingleton()->LoadLocks() returned true");
-
-			Model::Install();
-
-			logger::info("AmazingLockpicks.dll - inside function MessageHandler, if message->type == kPostLoad - Model::Install() returned successfully");
-
-			//EudaMessageUpdate::LockpickingMenuMessageHook::Hook();
-			//EudaMessageUpdate::EudaIMenuMessageHook::Hook();
-			//EudaMessageUpdate::LockpickingMenuMovieHook::Hook();
-			//EudaMessageUpdate::PlayerCharacterRemoveItem::Hook();
-			//EudaMessageUpdate::UpdatePickHealthHook::Hook();
-			EudaMessageUpdate::CanOpenLockpickingMenuHook::Hook();
-			EudaMessageUpdate::TryBeginLockPickingHook::Hook();
-			EudaMessageUpdate::UnknownSetupHook::Hook();
-            EudaMessageUpdate::EnterLockIntroHook::Hook();
-
-			#ifdef SKYRIM_AE
-				EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
-			#endif
-
-			#ifdef SKYRIM_SE
-                EudaMessageUpdate::EnterSoundEffectHookSE::Hook();
-			#endif
-
-			logger::info(
-				"AmazingLockpicks.dll - inside function MessageHandler, if message->type == kPostLoad - "
-				"LockpickingMenuMessageHook::Install() returned successfully");
-
-			//Sound::Install();
-		}
-	} else if (a_message->type == SKSE::MessagingInterface::kDataLoaded && currentManager->isPostLoadComplete) {
-		logger::info("AmazingLockpicks.dll - inside function MessageHandler, else if message->type == kDataLoaded");
-
+	}
+	else if (a_message->type == SKSE::MessagingInterface::kDataLoaded && currentManager->isPostLoadComplete)
+	{
 		currentManager->PrepareLockpickSingleton();
 
 		RE::FormID        originalLockpickFormID = 0xA;
@@ -240,7 +207,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		logger::info("{} --- LOCKPICK FORM FLAGS: {}", indexor, lockpickObject->formFlags);
 		++indexor;
 
-		if ((lockpickObject->formFlags & RE::TESObjectMISC::RecordFlags::kNonPlayable)) {
+		if ((lockpickObject->formFlags & RE::TESObjectMISC::RecordFlags::kNonPlayable))
+		{
 			lockpickObject->formFlags = lockpickObject->formFlags - RE::TESObjectMISC::RecordFlags::kNonPlayable;
 		}
 
@@ -254,10 +222,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		std::vector<Manager::EudaLockpickData>::iterator eudaIterator = currentManager->eudaLockpickVector.begin();
 
 		while (eudaIterator != currentManager->eudaLockpickVector.end()) {
-			if (!(RE::TESForm::LookupByEditorID<RE::TESObjectMISC>(eudaIterator->editor))) {
+			if (!(RE::TESForm::LookupByEditorID<RE::TESObjectMISC>(eudaIterator->editor)))
+			{
 				logger::warn("Removing editor id: {}", eudaIterator->editor);
 				eudaIterator = currentManager->eudaLockpickVector.erase(eudaIterator);
-			} else {
+			} else
+			{
 				++eudaIterator;
 			}
 		}
@@ -266,7 +236,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 		int ijk;
 
-		for (ijk = 0; ijk < currentManager->eudaLockpickVector.size(); ++ijk) {
+		for (ijk = 0; ijk < currentManager->eudaLockpickVector.size(); ++ijk)
+		{
 			RE::TESObjectMISC* currentLockpickForm =
 				RE::TESForm::LookupByEditorID<RE::TESObjectMISC>(currentManager->eudaLockpickVector.at(ijk).editor);
 
@@ -286,7 +257,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 				std::format("{}", currentManager->eudaLockpickVector.at(ijk).weight));
 			currentLockpickForm->weight = currentManager->eudaLockpickVector.at(ijk).weight;
 
-			if (currentManager->eudaLockpickVector.at(ijk).name.size() > 0) {
+			if (currentManager->eudaLockpickVector.at(ijk).name.size() > 0)
+			{
 				logger::info("{} --- Changing lockpick name from {} to {}", (ijk + 1),
 					currentLockpickForm->GetFullName(), currentManager->eudaLockpickVector.at(ijk).name);
 
@@ -299,20 +271,24 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		currentManager->eudaFormList =
 			RE::TESForm::LookupByEditorID<RE::BGSListForm>(currentManager->EudaFormListString);
 
-		if (!currentManager->eudaFormList) {
+		if (!currentManager->eudaFormList)
+		{
 			logger::warn("Could not find formlist with editor: {}", currentManager->EudaFormListString);
 		}
 
 		const int vectorSize = currentManager->eudaLockpickVector.size();
 		bool      stillSearching = true;
 
-		for (int i = 0; i < vectorSize && stillSearching; ++i) {
-			if (currentManager->eudaLockpickVector.at(i).formid == 0xA) {
+		for (int i = 0; i < vectorSize && stillSearching; ++i)
+		{
+			if (currentManager->eudaLockpickVector.at(i).formid == 0xA)
+			{
 				stillSearching = false;
 			}
 		}
 
-		if (stillSearching) {
+		if (stillSearching)
+		{
 			logger::warn("Did not find original (0xA) lockpick from file. Inserting with default values.");
 
 			Manager::EudaLockpickData tempData;
@@ -342,8 +318,34 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	}
 	else if (a_message->type == SKSE::MessagingInterface::kPostPostLoad && currentManager->isPostLoadComplete)
 	{
-		// prevents reloading lock and shiv model each time LockpickingMenu's member variable is set to false to dynamically load a different lockpick model
-        Model::Lock::RequestModel::Install();
+        if (currentManager->isPostLoadComplete)
+		{
+            Model::Install();
+
+            // EudaMessageUpdate::LockpickingMenuMessageHook::Hook();
+            // EudaMessageUpdate::EudaIMenuMessageHook::Hook();
+            // EudaMessageUpdate::LockpickingMenuMovieHook::Hook();
+            // EudaMessageUpdate::PlayerCharacterRemoveItem::Hook();
+            // EudaMessageUpdate::UpdatePickHealthHook::Hook();
+            EudaMessageUpdate::CanOpenLockpickingMenuHook::Hook();
+            EudaMessageUpdate::TryBeginLockPickingHook::Hook();
+            EudaMessageUpdate::UnknownSetupHook::Hook();
+            EudaMessageUpdate::EnterLockIntroHook::Hook();
+
+#ifdef SKYRIM_AE
+            EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
+#endif
+
+#ifdef SKYRIM_SE
+            EudaMessageUpdate::EnterSoundEffectHookSE::Hook();
+#endif
+
+			// prevents reloading lock and shiv model each time LockpickingMenu's member variable init3DElements is set
+            // to false to dynamically load a different lockpick model
+            Model::Lock::RequestModel::Install();
+        }
+
+
 	}
 }
 
