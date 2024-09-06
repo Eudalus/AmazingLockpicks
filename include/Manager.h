@@ -125,6 +125,7 @@ public:
 	bool allowLockSwap = true;
 	bool allowLockIntro = true;
 	RE::NiPoint3 originalLockRotationCenter;
+	bool bypassSurvivalModeWeight = true;
 
 	const int   DEFAULT_LOCKPICK_QUALITY = 1000;
 	const float DEFAULT_LOCKPICK_WEIGHT = 0.0f;

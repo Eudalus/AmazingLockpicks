@@ -300,7 +300,7 @@ float Manager::CalculatePickBreak(RE::LOCK_LEVEL lockLevel)
         (currentSetting = currentGameSettingCollections->GetSetting("fLockpickBreakSkillMult")) && currentSetting &&
         (currentSetting->GetType() == RE::Setting::Type::kFloat))
 	{
-        // running smoouthly
+        // running smoothly
         return ((actorValueOwner->GetActorValue(RE::ActorValue::kLockpicking) * currentSetting->data.f) + unmodifiedBreakSeconds) * modifiedBreakSeconds;
 	}
 	else if (actorValueOwner && currentGameSettingCollections &&

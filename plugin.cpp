@@ -331,6 +331,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
             EudaMessageUpdate::TryBeginLockPickingHook::Hook();
             EudaMessageUpdate::UnknownSetupHook::Hook();
             EudaMessageUpdate::EnterLockIntroHook::Hook();
+            EudaMessageUpdate::GetWeightHook::Hook();
 
 #ifdef SKYRIM_AE
             EudaMessageUpdate::EnterSoundEffectHookAE::Hook();

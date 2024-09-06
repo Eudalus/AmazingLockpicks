@@ -53,6 +53,19 @@ namespace Model
 
 namespace EudaMessageUpdate 
 {
+    // GetWeightHook
+    bool GetWeightHook::thunk()
+    {
+        return Manager::GetSingleton()->bypassSurvivalModeWeight;
+    }
+
+    void GetWeightHook::Hook()
+    {
+        REL::Relocation<std::uintptr_t> target{RELOCATION_ID(14809, 14988)};  // GetWeight
+
+        stl::write_thunk_call<EudaMessageUpdate::GetWeightHook>(target.address() + OFFSET(0x9E, 0x87));  // call IsInSurvivalMode
+    }
+
     // EnterLockIntroHook
     std::uintptr_t EnterLockIntroHook::thunk(RE::LockpickingMenu* menu, RE::NiControllerManager* niManager,
         RE::NiControllerSequence* niSequence)
@@ -77,9 +90,6 @@ namespace EudaMessageUpdate
             runtimeData.lockRotCenter.x = currentManager->originalLockRotationCenter.x;
             runtimeData.lockRotCenter.y = currentManager->originalLockRotationCenter.y;
             runtimeData.lockRotCenter.z = currentManager->originalLockRotationCenter.z;
-            //logger::info("UNMODIFIED --- PICK BREAK SECONDS: {}", runtimeData.pickBreakSeconds);
-            //runtimeData.pickBreakSeconds = currentManager->CalculatePickBreak(menu->GetTargetReference()->GetLockLevel()) * currentManager->CalculateQualityModifier();
-            //logger::info("MODIFIED ----- PICK BREAK SECONDS: {}", runtimeData.pickBreakSeconds);
         }
 
         Manager::GetSingleton()->allowLockIntro = true;
@@ -189,6 +199,9 @@ namespace EudaMessageUpdate
 
             runtimeData.pickBreakSeconds = currentManager->CalculatePickBreak(objectRef->GetLockLevel()) *
                                                          currentManager->CalculateQualityModifier();
+
+            menuNow->menuFlags.set(RE::UI_MENU_FLAGS::kCustomRendering);
+            //menuNow->menuFlags.reset(RE::UI_MENU_FLAGS::kPausesGame);
         }
 
         return value;
