@@ -349,59 +349,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	}
 }
 
-void TranslateLockLevel(RE::LOCK_LEVEL value, float& unmodifiedBreakSeconds, float& modifiedBreakSeconds)
-{
-	// values equivalent to UNMODIFIED game settings.
-	//fLockpickBreakBase:		0.05 --- potentially unused
-	//fLockpickBreakNovice:		2.00
-	//fLockpickBreakApprentice:	1.00
-	//fLockpickBreakAdept:		0.75
-	//fLockpickBreakExpert:		0.50
-	//fLockpickBreakMaster:		0.25
 
-	switch (value) {
-	case RE::LOCK_LEVEL::kEasy:  //kEasy = 1 --- apprentice
-		unmodifiedBreakSeconds = 1.00;
-		modifiedBreakSeconds =
-			RE::GameSettingCollection::GetSingleton()->GetSetting("fLockpickBreakApprentice")->data.f;
-		break;
-	case RE::LOCK_LEVEL::kAverage:  //kAverage = 2 --- adept
-		unmodifiedBreakSeconds = 1.00;
-		modifiedBreakSeconds =
-			RE::GameSettingCollection::GetSingleton()->GetSetting("fLockpickBreakAdept")->data.f;
-		break;
-	case RE::LOCK_LEVEL::kHard:  //kHard = 3 --- expert
-		unmodifiedBreakSeconds = 1.00;
-		modifiedBreakSeconds =
-			RE::GameSettingCollection::GetSingleton()->GetSetting("fLockpickBreakExpert")->data.f;
-		break;
-	case RE::LOCK_LEVEL::kVeryHard:  //kVeryHard = 4 --- master
-		unmodifiedBreakSeconds = 1.00;
-		modifiedBreakSeconds =
-			RE::GameSettingCollection::GetSingleton()->GetSetting("fLockpickBreakMaster")->data.f;
-		break;
-	default:  // kVeryEasy = 0 --- novice also exceptions for kUnlocked = -1 and kRequiresKey = 5
-		unmodifiedBreakSeconds = 1.00;
-		modifiedBreakSeconds =
-			RE::GameSettingCollection::GetSingleton()->GetSetting("fLockpickBreakNovice")->data.f;
-	}
-}
-
-float CalculatePickBreak(RE::LOCK_LEVEL lockLevel)
-{
-	float unmodifiedBreakSeconds, modifiedBreakSeconds;
-
-	TranslateLockLevel(lockLevel, unmodifiedBreakSeconds, modifiedBreakSeconds);
-
-	return ((RE::PlayerCharacter::GetSingleton()
-					->GetInfoRuntimeData()
-					.skills->data->skills[RE::PlayerCharacter::PlayerSkills::Data::Skills::kLockpicking]
-					.level *
-				RE::GameSettingCollection::GetSingleton()->GetSetting("fLockpickBreakSkillMult")->data.f *
-				unmodifiedBreakSeconds) +
-			   unmodifiedBreakSeconds) *
-	       modifiedBreakSeconds;
-}
 
 /*
 void InitializeLog()

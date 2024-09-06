@@ -52,12 +52,15 @@ int Manager::RecountAndUpdate()
 
 	uniqueLockpickTotal = 0;
 
-	for (int i = 0; i < vectorSize; ++i) {
+	for (int i = 0; i < vectorSize; ++i)
+	{
 		currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(i).formid);
 		currentLockpickCounter = player->GetItemCount(currentLockpickObject);
 
-		if (currentLockpickCounter >= 1 && stillSearching) {
-			if (bestLockpickIndex != i || (*currentLockpickSingleton)->formID != currentLockpickObject->formID) {
+		if (currentLockpickCounter >= 1 && stillSearching)
+		{
+			if (bestLockpickIndex != i || (*currentLockpickSingleton)->formID != currentLockpickObject->formID)
+			{
 				*currentLockpickSingleton = currentLockpickObject;
 				bestLockpickIndex = i;
 				shouldUpdateModel = true;
@@ -69,7 +72,8 @@ int Manager::RecountAndUpdate()
 		uniqueLockpickTotal += currentLockpickCounter;
 	}
 
-	if (stillSearching) {
+	if (stillSearching)
+	{
 		// set to default
 		*currentLockpickSingleton = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
 		bestLockpickIndex = eudaLockpickMap.at((*currentLockpickSingleton)->formID);
@@ -92,7 +96,8 @@ int Manager::RecountUniqueLockpickTotal()
 
 	uniqueLockpickTotal = 0;
 
-	for (int i = 0; i < vectorSize; ++i) {
+	for (int i = 0; i < vectorSize; ++i)
+	{
 		uniqueLockpickTotal += player->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(i).formid));
 	}
 
@@ -115,10 +120,13 @@ bool Manager::PrepareLockpickSingleton()
 /// <returns>The int member variable bestLockpickIndex</returns>
 int Manager::UpdateLockpickSingleton(RE::TESObjectMISC* lockpickValue, int bestIndex)
 {
-	if (lockpickValue) {
+	if (lockpickValue)
+	{
 		*currentLockpickSingleton = lockpickValue;
 		bestLockpickIndex = bestIndex;
-	} else {
+	}
+	else
+	{
 		*currentLockpickSingleton = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
 		bestLockpickIndex = eudaLockpickMap.at((*currentLockpickSingleton)->formID);
 	}
@@ -134,7 +142,8 @@ int Manager::UpdateBestLockpickFromIndex(int indexValue = 0)
 	while (indexValue >= 0 && indexValue < vectorSize) {
 		const auto currentItem = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(indexValue).formid);
 
-		if (currentItem && playerCharacter->GetItemCount(currentItem) >= 1) {
+		if (currentItem && playerCharacter->GetItemCount(currentItem) >= 1)
+		{
 			return UpdateLockpickSingleton(currentItem, indexValue);
 		}
 
@@ -154,11 +163,14 @@ void Manager::SortLockpicksByQuality()
 	EudaLockpickData tempData;
 	const int        vectorSize = eudaLockpickVector.size();
 
-	for (int k = 0; k < vectorSize; ++k) {
-		for (int i = 0; (i + 1) < vectorSize; ++i) {
+	for (int k = 0; k < vectorSize; ++k)
+	{
+		for (int i = 0; (i + 1) < vectorSize; ++i)
+		{
 			tempData.quality = eudaLockpickVector.at(i + 1).quality;
 
-			if (tempData.quality > eudaLockpickVector.at(i).quality) {
+			if (tempData.quality > eudaLockpickVector.at(i).quality)
+			{
 				tempData.editor = eudaLockpickVector.at(i + 1).editor;
 				tempData.path = eudaLockpickVector.at(i + 1).path;
 				tempData.weight = eudaLockpickVector.at(i + 1).weight;
@@ -180,6 +192,159 @@ void Manager::SortLockpicksByQuality()
 				eudaLockpickVector.at(i).formid = tempData.formid;
 			}
 		}
+	}
+}
+
+bool Manager::TranslateLockLevel(RE::LOCK_LEVEL value, float& unmodifiedBreakSeconds, float& modifiedBreakSeconds)
+{
+    const auto currentGameSettingCollection = RE::GameSettingCollection::GetSingleton();
+	RE::Setting* currentSetting;
+	bool successful = false;
+
+    // equivalent to UNMODIFIED game settings.
+    // fLockpickBreakBase:			0.05 --- potentially unused
+    // fLockpickBreakNovice:		2.00
+    // fLockpickBreakApprentice:	1.00
+    // fLockpickBreakAdept:			0.75
+    // fLockpickBreakExpert:		0.50
+    // fLockpickBreakMaster:		0.25
+	if (currentGameSettingCollection)
+	{
+		if ((value == RE::LOCK_LEVEL::kEasy) && (currentSetting = currentGameSettingCollection->GetSetting("fLockpickBreakApprentice")) && (currentSetting->GetType() == RE::Setting::Type::kFloat)) 
+		{
+            // kEasy = 1 --- apprentice
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = currentSetting->data.f;
+			successful = true;
+		}
+		else if ((value == RE::LOCK_LEVEL::kAverage) && (currentSetting = currentGameSettingCollection->GetSetting("fLockpickBreakAdept")) && (currentSetting->GetType() == RE::Setting::Type::kFloat))
+		{
+            // kAverage = 2 --- adept
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = currentSetting->data.f;
+            successful = true;
+		}
+		else if ((value == RE::LOCK_LEVEL::kHard) && (currentSetting = currentGameSettingCollection->GetSetting("fLockpickBreakExpert")) && (currentSetting->GetType() == RE::Setting::Type::kFloat))
+		{
+            // kHard = 3 --- expert
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = currentSetting->data.f;
+            successful = true;
+		}
+		else if ((value == RE::LOCK_LEVEL::kVeryHard) && (currentSetting = currentGameSettingCollection->GetSetting("fLockpickBreakMaster")) && (currentSetting->GetType() == RE::Setting::Type::kFloat))
+		{
+            // kVeryHard = 4 --- master
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = currentSetting->data.f;
+            successful = true;
+		}
+		else if ((currentSetting = currentGameSettingCollection->GetSetting("fLockpickBreakNovice")) && (currentSetting->GetType() == RE::Setting::Type::kFloat))
+		{
+            // kVeryEasy = 0 --- novice also exceptions for kUnlocked = -1 and kRequiresKey = 5
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = currentSetting->data.f;
+            successful = true;
+		}
+	}
+
+	return successful;
+}
+
+void Manager::TranslateLockLevelFallBack(RE::LOCK_LEVEL value, float& unmodifiedBreakSeconds, float& modifiedBreakSeconds)
+{
+    // equivalent to UNMODIFIED game settings.
+    // fLockpickBreakBase:			0.05 --- potentially unused
+    // fLockpickBreakNovice:		2.00
+    // fLockpickBreakApprentice:	1.00
+    // fLockpickBreakAdept:			0.75
+    // fLockpickBreakExpert:		0.50
+    // fLockpickBreakMaster:		0.25
+    switch (value)
+	{
+        case RE::LOCK_LEVEL::kEasy:  // kEasy = 1 --- apprentice
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = FALLBACK_LOCKPICK_BREAK_APPRENTICE;
+            break;
+        case RE::LOCK_LEVEL::kAverage:  // kAverage = 2 --- adept
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = FALLBACK_LOCKPICK_BREAK_ADEPT;
+            break;
+        case RE::LOCK_LEVEL::kHard:  // kHard = 3 --- expert
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = FALLBACK_LOCKPICK_BREAK_EXPERT;
+            break;
+        case RE::LOCK_LEVEL::kVeryHard:  // kVeryHard = 4 --- master
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = FALLBACK_LOCKPICK_BREAK_MASTER;
+            break;
+        default:  // kVeryEasy = 0 --- novice also exceptions for kUnlocked = -1 and kRequiresKey = 5
+            unmodifiedBreakSeconds = 1.00;
+            modifiedBreakSeconds = FALLBACK_LOCKPICK_BREAK_NOVICE;
+    }
+}
+
+float Manager::CalculatePickBreak(RE::LOCK_LEVEL lockLevel)
+{
+    const auto currentGameSettingCollections = RE::GameSettingCollection::GetSingleton();
+    const auto currentPlayer = RE::PlayerCharacter::GetSingleton();
+
+	RE::Setting* currentSetting;
+    float unmodifiedBreakSeconds, modifiedBreakSeconds;
+    
+	const auto actorValueOwner = currentPlayer ? currentPlayer->AsActorValueOwner() : nullptr;
+
+	// float arguments passed by reference
+    bool successful = TranslateLockLevel(lockLevel, unmodifiedBreakSeconds, modifiedBreakSeconds);
+
+	if (successful && actorValueOwner && currentGameSettingCollections &&
+        (currentSetting = currentGameSettingCollections->GetSetting("fLockpickBreakSkillMult")) && currentSetting &&
+        (currentSetting->GetType() == RE::Setting::Type::kFloat))
+	{
+        // running smoouthly
+        return ((actorValueOwner->GetActorValue(RE::ActorValue::kLockpicking) * currentSetting->data.f) + unmodifiedBreakSeconds) * modifiedBreakSeconds;
+	}
+	else if (actorValueOwner && currentGameSettingCollections &&
+               (currentSetting = currentGameSettingCollections->GetSetting("fLockpickBreakSkillMult")) &&
+               currentSetting && (currentSetting->GetType() == RE::Setting::Type::kFloat))
+	{
+        // Game setting from TranslateLockLevel doesn't exist, had its name, or data type modified
+        // float arguments passed by reference
+		TranslateLockLevelFallBack(lockLevel, unmodifiedBreakSeconds, modifiedBreakSeconds);
+
+		return ((actorValueOwner->GetActorValue(RE::ActorValue::kLockpicking) * currentSetting->data.f) +
+                unmodifiedBreakSeconds) *
+               modifiedBreakSeconds;
+	}
+	else if (actorValueOwner)
+	{
+		// Game setting fLockpickBreakSkillMult doesn't exist, player skill exists at least
+        // float arguments passed by reference
+        TranslateLockLevelFallBack(lockLevel, unmodifiedBreakSeconds, modifiedBreakSeconds);
+
+		return ((actorValueOwner->GetActorValue(RE::ActorValue::kLockpicking) *
+            FALLBACK_LOCKPICK_BREAK_SKILL_MULT) +
+        unmodifiedBreakSeconds) *
+        modifiedBreakSeconds;
+	}
+	else
+	{
+        // everything is busted, assume vanilla values. Can't even scale lockpicking off player.
+        // float arguments passed by reference
+        TranslateLockLevelFallBack(lockLevel, unmodifiedBreakSeconds, modifiedBreakSeconds);
+
+		return modifiedBreakSeconds;
+	}
+}
+
+float Manager::CalculateQualityModifier()
+{
+	if (bestLockpickIndex >= 0 && bestLockpickIndex < eudaLockpickVector.size())
+	{
+        return (eudaLockpickVector.at(bestLockpickIndex).quality / ((float)DEFAULT_LOCKPICK_QUALITY));
+	}
+	else
+	{
+		return FALLBACK_LOCKPICK_QUALITY_MODIFIER;
 	}
 }
 

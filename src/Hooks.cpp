@@ -58,21 +58,29 @@ namespace EudaMessageUpdate
         RE::NiControllerSequence* niSequence)
     {
         const auto currentManager = Manager::GetSingleton();
-        auto& runtimeData = menu->GetRuntimeData();
-
-        if (currentManager->allowLockIntro)
+        
+        if (currentManager->allowLockIntro && menu)
         {
+            auto& runtimeData = menu->GetRuntimeData();
+
             currentManager->originalLockRotationCenter.x = runtimeData.lockRotCenter.x;
             currentManager->originalLockRotationCenter.y = runtimeData.lockRotCenter.y;
             currentManager->originalLockRotationCenter.z = runtimeData.lockRotCenter.z;
 
             return func(menu, niManager, niSequence);
         }
+        else if (menu)
+        {
+            auto& runtimeData = menu->GetRuntimeData();
 
-        runtimeData.lockRotate->Activate(0, 1, 1.0, -1.0, 0, true);
-        runtimeData.lockRotCenter.x = currentManager->originalLockRotationCenter.x;
-        runtimeData.lockRotCenter.y = currentManager->originalLockRotationCenter.y;
-        runtimeData.lockRotCenter.z = currentManager->originalLockRotationCenter.z;
+            runtimeData.lockRotate->Activate(0, 1, 1.0, -1.0, 0, true);
+            runtimeData.lockRotCenter.x = currentManager->originalLockRotationCenter.x;
+            runtimeData.lockRotCenter.y = currentManager->originalLockRotationCenter.y;
+            runtimeData.lockRotCenter.z = currentManager->originalLockRotationCenter.z;
+            //logger::info("UNMODIFIED --- PICK BREAK SECONDS: {}", runtimeData.pickBreakSeconds);
+            //runtimeData.pickBreakSeconds = currentManager->CalculatePickBreak(menu->GetTargetReference()->GetLockLevel()) * currentManager->CalculateQualityModifier();
+            //logger::info("MODIFIED ----- PICK BREAK SECONDS: {}", runtimeData.pickBreakSeconds);
+        }
 
         Manager::GetSingleton()->allowLockIntro = true;
 
@@ -171,6 +179,18 @@ namespace EudaMessageUpdate
             currentManager->shouldUpdateModel = false;
         }
 
+        const auto uiNow = RE::UI::GetSingleton();
+        const auto menuNow = uiNow ? uiNow->GetMenu<RE::LockpickingMenu>(RE::LockpickingMenu::MENU_NAME) : nullptr;
+        RE::TESObjectREFR* objectRef;
+
+        if (menuNow && (objectRef = RE::LockpickingMenu::GetTargetReference()))
+        {
+            auto& runtimeData = menuNow->GetRuntimeData();
+
+            runtimeData.pickBreakSeconds = currentManager->CalculatePickBreak(objectRef->GetLockLevel()) *
+                                                         currentManager->CalculateQualityModifier();
+        }
+
         return value;
     }
 
@@ -182,6 +202,8 @@ namespace EudaMessageUpdate
             target.address() + OFFSET(0x31, 0x28));  // call GetItemCount offset
     }
 
+///// ----- deprecated, debug, and testing functions -----
+    /*
     // PlayerCharacterRemoveItem
     RE::ObjectRefHandle PlayerCharacterRemoveItem::RemoveItem(
         RE::PlayerCharacter* playerCharacter, RE::TESBoundObject* a_item,
@@ -203,8 +225,6 @@ namespace EudaMessageUpdate
         _RemoveItem = REL::Relocation<uintptr_t>(RE::VTABLE_PlayerCharacter[0]).write_vfunc(0x56, RemoveItem);
     }
 
-///// ----- deprecated, debug, and testing functions -----
-    /*
     // UpdatePickHealthHook
     std::int32_t UpdatePickHealthHook::thunk(RE::LockpickingMenu* a1, std::int64_t a2, std::int64_t a3, std::int64_t a4)
     {

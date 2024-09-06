@@ -124,6 +124,8 @@ namespace EudaMessageUpdate
 		static void Hook();
 	};
 
+///// ----- deprecated, debug, and testing functions -----
+    /*
 	struct PlayerCharacterRemoveItem
 	{
 		static RE::ObjectRefHandle RemoveItem(RE::PlayerCharacter* playerCharacter, RE::TESBoundObject* a_item, std::int32_t a_count,
@@ -136,8 +138,6 @@ namespace EudaMessageUpdate
 		static void Hook();
 	};
 
-///// ----- deprecated, debug, and testing functions -----
-    /*
 	struct UpdatePickHealthHook
 	{
 		static std::int32_t thunk(RE::LockpickingMenu* a1, std::int64_t a2, std::int64_t a3, std::int64_t a4);
