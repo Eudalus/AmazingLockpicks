@@ -75,114 +75,6 @@ void SetupLog()
     spdlog::flush_on(spdlog::level::trace);
 }
 
-/*
-void MessageHandler(SKSE::MessagingInterface::Message* a_message)
-{
-	switch (a_message->type) {
-	case SKSE::MessagingInterface::kPostLoad:
-		{
-			if (Manager::GetSingleton()->LoadLocks()) {
-				Model::Install();
-				Sound::Install();
-			}
-		}
-		break;
-	case SKSE::MessagingInterface::kPostPostLoad:
-		{
-			logger::info("{:*^30}", "MERGES");
-			MergeMapperPluginAPI::GetMergeMapperInterface001();  // Request interface
-			if (g_mergeMapperInterface) {                        // Use Interface
-				const auto version = g_mergeMapperInterface->GetBuildNumber();
-				logger::info("\tGot MergeMapper interface buildnumber {}", version);
-			} else {
-				logger::info("INFO - MergeMapper not detected");
-			}
-		}
-		break;
-	case SKSE::MessagingInterface::kDataLoaded:
-		Manager::GetSingleton()->InitLockForms();
-		break;
-	default:
-		break;
-	}
-}
-
-#ifdef SKYRIM_AE
-extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
-	SKSE::PluginVersionData v;
-	v.PluginVersion(Version::MAJOR);
-	v.PluginName("Amazing Lockpicks");
-	v.AuthorName("Eudalus");
-	v.UsesAddressLibrary();
-	v.UsesUpdatedStructs();
-	v.CompatibleVersions({ SKSE::RUNTIME_LATEST });
-
-	return v;
-}();
-#else
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
-{
-	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = "Amazing Lockpicks";
-	a_info->version = Version::MAJOR;
-
-	if (a_skse->IsEditor()) {
-		logger::critical("Loaded in editor, marking as incompatible"sv);
-		return false;
-	}
-
-	const auto ver = a_skse->RuntimeVersion();
-	if (ver
-#	ifndef SKYRIMVR
-		< SKSE::RUNTIME_1_5_39
-#	else
-		> SKSE::RUNTIME_VR_1_4_15_1
-#	endif
-	) {
-		logger::critical(FMT_STRING("Unsupported runtime version {}"), ver.string());
-		return false;
-	}
-
-	return true;
-}
-#endif
-
-void InitializeLog()
-{
-	auto path = logger::log_directory();
-	if (!path) {
-		stl::report_and_fail("Failed to find standard logging directory"sv);
-	}
-
-	*path /= fmt::format(FMT_STRING("{}.log"), Version::PROJECT);
-	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
-
-	auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
-
-	log->set_level(spdlog::level::info);
-	log->flush_on(spdlog::level::info);
-
-	spdlog::set_default_logger(std::move(log));
-	spdlog::set_pattern("[%H:%M:%S:%e] %v"s);
-
-	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
-}
-
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
-{
-	SKSE::Init(a_skse);
-
-	InitializeLog();
-
-	logger::info("Game version : {}", a_skse->RuntimeVersion().string());
-
-	const auto messaging = SKSE::GetMessagingInterface();
-	messaging->RegisterListener(MessageHandler);
-
-	return true;
-}
-*/
-
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
 	const auto currentManager = Manager::GetSingleton();
@@ -320,7 +212,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	{
         if (currentManager->isPostLoadComplete)
 		{
-            Model::Install();
+            Model::Lockpick::RequestModel::Install();
 
             // EudaMessageUpdate::LockpickingMenuMessageHook::Hook();
             // EudaMessageUpdate::EudaIMenuMessageHook::Hook();
@@ -331,7 +223,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
             EudaMessageUpdate::TryBeginLockPickingHook::Hook();
             EudaMessageUpdate::UnknownSetupHook::Hook();
             EudaMessageUpdate::EnterLockIntroHook::Hook();
+
+			// VR doesn't have survival mode
+#ifdef SKYRIM_AE || SKYRIM_SE
             EudaMessageUpdate::GetWeightHook::Hook();
+#endif
 
 #ifdef SKYRIM_AE
             EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
@@ -345,69 +241,16 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
             // to false to dynamically load a different lockpick model
             Model::Lock::RequestModel::Install();
         }
-
-
 	}
 }
-
-
-
-/*
-void InitializeLog()
-{
-	auto path = logger::log_directory();
-	if (!path)
-	{
-		stl::report_and_fail("Failed to find standard logging directory"sv);
-	}
-
-	*path /= fmt::format(FMT_STRING("{}.log"), Version::PROJECT);
-	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
-
-	auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
-
-	log->set_level(spdlog::level::info);
-	log->flush_on(spdlog::level::info);
-
-	spdlog::set_default_logger(std::move(log));
-	spdlog::set_pattern("[%H:%M:%S:%e] %v"s);
-
-	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
-}
-
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
-{
-	SKSE::Init(a_skse);
-
-	InitializeLog();
-
-	logger::info("Game version : {}", a_skse->RuntimeVersion().string());
-
-	const auto messaging = SKSE::GetMessagingInterface();
-	messaging->RegisterListener(MessageHandler);
-
-	return true;
-}
-
-*/
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
     SetupLog();
 
-    // auto *plugin = SKSE::PluginDeclaration::GetSingleton();
-    // auto version = plugin->GetVersion();
-
-    // version.compare(SKSE::PluginDeclaration::GetSingleton()->GetVersion());
-
-    // logger::info("{} {} is loading...", plugin->GetName(), version);
-
     SKSE::Init(skse);
 
     //SKSE::GetPapyrusInterface()->Register(EudaBindPapyrusFunctions);
-
-    // spdlog::info("UniqueLockpicks - printing from function SKSEPluginLoad using spdlog::info");
-    // SKSE::log::info("UniqueLockpicks - printing from function SKSEPluginLoad using SKSE::log::info");
 
     const auto messaging = SKSE::GetMessagingInterface();
     messaging->RegisterListener(MessageHandler);

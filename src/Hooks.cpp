@@ -41,13 +41,13 @@ namespace Model
 
 			return func(path.c_str(), a_modelHandle, a_traits);
 		}
-	}
 
-	void Install()
-	{
-		REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(51081, 51960) };
+        void RequestModel::Install()
+        {
+            REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51081, 51960)};
 
-		stl::write_thunk_call<Lockpick::RequestModel>(target.address() + OFFSET_3(0xA1, 0x97, 0x96));
+            stl::write_thunk_call<Lockpick::RequestModel>(target.address() + OFFSET_3(0xA1, 0x97, 0x96));
+        }
 	}
 }
 

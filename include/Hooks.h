@@ -50,10 +50,10 @@ namespace Model
 			static RE::BSResource::ErrorCode thunk(const char* a_modelPath, std::uintptr_t a_modelHandle, const RE::BSModelDB::DBTraits::ArgsType& a_traits);
 
 			static inline REL::Relocation<decltype(thunk)> func;
+
+			static void Install();
 		};
 	}
-
-	void Install();
 }
 
 namespace EudaMessageUpdate
@@ -63,6 +63,7 @@ namespace EudaMessageUpdate
 	/// playing OUT of survival mode completely prevents the original lockpick (0xA)
 	/// from returning weight even if the item has a weight value
 	/// ammo/arrows receive the same treatment with a separate call to IsInSurvivalMode
+	/// VR doesn't have survival mode and doesn't need to use this hook
 	/// </summary>
 	class GetWeightHook
 	{
