@@ -97,6 +97,7 @@ namespace EudaMessageUpdate
 	};
 
 	// thunk returns pointer that might be to RE::TESForm 
+	// same signature as VR
 	class EnterSoundEffectHookAE
 	{
     public:

@@ -59,6 +59,7 @@ namespace EudaMessageUpdate
         return Manager::GetSingleton()->bypassSurvivalModeWeight;
     }
 
+    // GetWeightHook
     void GetWeightHook::Hook()
     {
         REL::Relocation<std::uintptr_t> target{RELOCATION_ID(14809, 14988)};  // GetWeight
@@ -97,11 +98,13 @@ namespace EudaMessageUpdate
         return NULL;
     }
 
+    // EnterLockIntroHook
     void EnterLockIntroHook::Hook()
     {
-        REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51071, 51950)};  // LockpickingMenu::ProcessMouseMove4
+        //REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51071, 51950)};  // LockpickingMenu::ProcessMouseMove4
+        REL::VariantID target{REL::VariantID(51071, 51950, 0x8C3E10)};
 
-        stl::write_thunk_call<EudaMessageUpdate::EnterLockIntroHook>(target.address() + OFFSET(0x103, 0x103));  // call SetupControllers
+        stl::write_thunk_call<EudaMessageUpdate::EnterLockIntroHook>(target.address() + OFFSET_3(0x103, 0x103, 0x104));  // call SetupControllers
     }
 
     // EnterSoundEffectHook - SE version
@@ -115,6 +118,7 @@ namespace EudaMessageUpdate
         Manager::GetSingleton()->allowEnterAudio = true;
     }
 
+    // EnterSoundEffectHook - SE version
     void EnterSoundEffectHookSE::Hook()
     {
         REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51087, 51967)};  // CanOpenLockpickingMenu
@@ -122,7 +126,7 @@ namespace EudaMessageUpdate
         stl::write_thunk_branch<EudaMessageUpdate::EnterSoundEffectHookSE>(target.address() + OFFSET(0xB5, 0xAC));  // PlaySoundEffect, should never call AE address
     }
 
-    //EnterSoundEffectHook - AE version
+    //EnterSoundEffectHook - AE / VR version
     std::uintptr_t EnterSoundEffectHookAE::thunk(char* soundPath)
     {
         if (Manager::GetSingleton()->allowEnterAudio)
@@ -135,11 +139,13 @@ namespace EudaMessageUpdate
         return NULL;
     }
 
+    // EnterSoundEffectHook - AE / VR version
     void EnterSoundEffectHookAE::Hook()
     {
-        REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51087, 51967)};  // CanOpenLockpickingMenu
+        //REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51087, 51967)};  // CanOpenLockpickingMenu
+        REL::VariantID target{REL::VariantID(51087, 51967, 0x8C59F0)};
 
-        stl::write_thunk_branch<EudaMessageUpdate::EnterSoundEffectHookAE>(target.address() + OFFSET(0xB5, 0xAC));  // PlaySoundEffect, should never call SE address
+        stl::write_thunk_branch<EudaMessageUpdate::EnterSoundEffectHookAE>(target.address() + OFFSET_3(0xB5, 0xAC, 0xB5));  // PlaySoundEffect, should never call SE address
     }
 
     // UnknownSetupHook
@@ -148,11 +154,12 @@ namespace EudaMessageUpdate
         return Manager::GetSingleton()->uniqueLockpickTotal;
     }
 
+    // UnknownSetupHook
 	void UnknownSetupHook::Hook()
 	{
         REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51084, 51963)};  // UnknownSetupHook
 
-        stl::write_thunk_call<EudaMessageUpdate::UnknownSetupHook>(target.address() + OFFSET(0x5B6, 0x5C1));  // call GetItemCount offset
+        stl::write_thunk_call<EudaMessageUpdate::UnknownSetupHook>(target.address() + OFFSET_3(0x5B6, 0x5C1, 0x5B6));  // call GetItemCount offset
     }
 
 	// TryBeginLockPickingHook
@@ -169,12 +176,13 @@ namespace EudaMessageUpdate
         return value;
     }
 
+    // TryBeginLockPickingHook
 	void TryBeginLockPickingHook::Hook()
 	{
-        REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51080, 51959)};  // TryBeginLockpicking
+        //REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51080, 51959)};  // TryBeginLockpicking
+        REL::VariantID target{REL::VariantID(51080, 51959, 0x8C45E0)};
 
-        stl::write_thunk_call<EudaMessageUpdate::TryBeginLockPickingHook>(
-            target.address() + OFFSET(0xEE, 0xE3));  // call GetItemCount offset
+        stl::write_thunk_call<EudaMessageUpdate::TryBeginLockPickingHook>(target.address() + OFFSET_3(0xEE, 0xE3, 0xEE));  // call GetItemCount offset
     }
 
 	// CanOpenLockpickingMenuHook
@@ -199,20 +207,18 @@ namespace EudaMessageUpdate
 
             runtimeData.pickBreakSeconds = currentManager->CalculatePickBreak(objectRef->GetLockLevel()) *
                                                          currentManager->CalculateQualityModifier();
-
-            menuNow->menuFlags.set(RE::UI_MENU_FLAGS::kCustomRendering);
-            //menuNow->menuFlags.reset(RE::UI_MENU_FLAGS::kPausesGame);
         }
 
         return value;
     }
 
+    // CanOpenLockpickingMenuHook
     void CanOpenLockpickingMenuHook::Hook()
     {
-        REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51087, 51967)};  // CanOpenLockpickingMenu
+        //REL::Relocation<std::uintptr_t> target{RELOCATION_ID(51087, 51967)};  // CanOpenLockpickingMenu
+        REL::VariantID target{REL::VariantID(51087, 51967, 0x8C59F0)};
 
-        stl::write_thunk_call<EudaMessageUpdate::CanOpenLockpickingMenuHook>(
-            target.address() + OFFSET(0x31, 0x28));  // call GetItemCount offset
+        stl::write_thunk_call<EudaMessageUpdate::CanOpenLockpickingMenuHook>(target.address() + OFFSET_3(0x31, 0x28, 0x31));  // call GetItemCount offset
     }
 
 ///// ----- deprecated, debug, and testing functions -----

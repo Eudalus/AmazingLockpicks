@@ -229,7 +229,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
             EudaMessageUpdate::GetWeightHook::Hook();
 #endif
 
-#ifdef SKYRIM_AE
+#ifdef SKYRIM_AE || Skyrim_VR
             EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
 #endif
 
