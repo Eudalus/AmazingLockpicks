@@ -244,13 +244,72 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	}
 }
 
+int RequestCurrentIndexNative(RE::StaticFunctionTag* tag)
+{
+	return Manager::GetSingleton()->bestLockpickIndex;
+}
+
+int RequestIndexByLockpickNative(RE::StaticFunctionTag* tag, RE::TESObjectMISC* lockpick)
+{
+    const auto currentManager = Manager::GetSingleton();
+
+	if (lockpick && currentManager->eudaLockpickMap.count(lockpick->formID) >= 1)
+	{
+        return currentManager->eudaLockpickMap.at(lockpick->formID);
+	}
+
+	return -1;
+}
+
+RE::TESObjectMISC* RequestLockpickByIndexNative(RE::StaticFunctionTag* tag, int index)
+{
+	const auto currentManager = Manager::GetSingleton();
+
+	if ((index >= 0) && (index < currentManager->eudaLockpickVector.size()))
+	{
+		return RE::TESForm::LookupByID<RE::TESObjectMISC>(currentManager->eudaLockpickVector.at(index).formid);
+	}
+
+	return nullptr;
+}
+
+int RequestLockpickQualityByIndexNative(RE::StaticFunctionTag* tag, int index)
+{
+    const auto currentManager = Manager::GetSingleton();
+
+	if ((index >= 0) && (index < currentManager->eudaLockpickVector.size()))
+	{
+		return currentManager->eudaLockpickVector.at(index).quality;
+	}
+
+	return currentManager->DEFAULT_LOCKPICK_QUALITY;
+}
+
+// Should always be called before using the other native-Papyrus functions for accuracy.
+int RecountUniqueLockpicksNative(RE::StaticFunctionTag* tag)
+{
+	return Manager::GetSingleton()->RecountAndUpdate();
+}
+
+bool EudaBindPapyrusFunctions(RE::BSScript::IVirtualMachine* vm)
+{
+    vm->RegisterFunction("RequestCurrentIndexPapyrus", "EudaPapyrusNativeScript", RequestCurrentIndexNative);
+    vm->RegisterFunction("RequestIndexByLockpickPapyrus", "EudaPapyrusNativeScript", RequestIndexByLockpickNative);
+    vm->RegisterFunction("RequestLockpickByIndexPapyrus", "EudaPapyrusNativeScript", RequestLockpickByIndexNative);
+	vm->RegisterFunction("RequestLockpickQualityByIndexPapyrus", "EudaPapyrusNativeScript",RequestLockpickQualityByIndexNative);
+	vm->RegisterFunction("RecountUniqueLockpicksPapyrus", "EudaPapyrusNativeScript", RecountUniqueLockpicksNative);
+
+	return true;
+}
+
+
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
     SetupLog();
 
     SKSE::Init(skse);
 
-    //SKSE::GetPapyrusInterface()->Register(EudaBindPapyrusFunctions);
+    SKSE::GetPapyrusInterface()->Register(EudaBindPapyrusFunctions);
 
     const auto messaging = SKSE::GetMessagingInterface();
     messaging->RegisterListener(MessageHandler);
