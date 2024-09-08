@@ -3,14 +3,31 @@
 
 namespace logger = SKSE::log;
 
+RE::BSResource::ErrorCode Manager::HideLockpickModelVR(std::string target, bool hide)
+{
+    RE::NiPointer<RE::NiNode> nPointer;
+    constexpr RE::BSModelDB::DBTraits::ArgsType args{};
+
+    const auto demandError = RE::BSModelDB::Demand(target.c_str(), nPointer, args);
+
+    if (demandError == RE::BSResource::ErrorCode::kNone)
+	{
+        nPointer->AsNode()->CullGeometry(hide);
+    }
+
+	return demandError;
+}
+
 void Manager::HideLockpickModel(bool hide)
 {
 	//auto menuNow = RE::UI::GetSingleton()->GetMenu<RE::LockpickingMenu>(RE::LockpickingMenu::MENU_NAME);
 
-	if (RE::UI::GetSingleton()->IsMenuOpen(RE::LockpickingMenu::MENU_NAME)) {
+	if (RE::UI::GetSingleton()->IsMenuOpen(RE::LockpickingMenu::MENU_NAME))
+	{
 		const auto pickModelHandle = static_cast<RE::BSResource::ModelID*>(RE::UI::GetSingleton()->GetMenu<RE::LockpickingMenu>(RE::LockpickingMenu::MENU_NAME)->GetRuntimeData().lockpick);
 
-		if (pickModelHandle && pickModelHandle->data) {
+		if (pickModelHandle && pickModelHandle->data)
+		{
 			//pickModelHandle->data->SetAppCulled(hide);
 			pickModelHandle->data->CullGeometry(hide);
 			//pickModelHandle->data->CullNode(hide);
@@ -106,7 +123,8 @@ int Manager::RecountUniqueLockpickTotal()
 
 bool Manager::PrepareLockpickSingleton()
 {
-	currentLockpickSingleton = (RE::TESObjectMISC**)RELOCATION_ID(514921, 401059).address();  // Lockpick singleton ID -> address
+	//currentLockpickSingleton = (RE::TESObjectMISC**)RELOCATION_ID(514921, 401059).address();  // Lockpick singleton ID -> address
+    currentLockpickSingleton = (RE::TESObjectMISC**)REL::VariantID(514921, 401059, 0x2FC4748).address();
 
 	return currentLockpickSingleton;
 }
@@ -139,7 +157,8 @@ int Manager::UpdateBestLockpickFromIndex(int indexValue = 0)
 	const auto playerCharacter = RE::PlayerCharacter::GetSingleton();
 	const auto vectorSize = eudaLockpickVector.size();
 
-	while (indexValue >= 0 && indexValue < vectorSize) {
+	while (indexValue >= 0 && indexValue < vectorSize)
+	{
 		const auto currentItem = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(indexValue).formid);
 
 		if (currentItem && playerCharacter->GetItemCount(currentItem) >= 1)

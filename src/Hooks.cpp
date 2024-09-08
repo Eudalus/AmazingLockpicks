@@ -32,14 +32,14 @@ namespace Model
 	{
 		RE::BSResource::ErrorCode RequestModel::thunk(const char* a_modelPath, std::uintptr_t a_modelHandle, const RE::BSModelDB::DBTraits::ArgsType& a_traits)
 		{
-			const auto path = Manager::GetSingleton()->GetLockpickModel(a_modelPath);
+            const auto path = Manager::GetSingleton()->GetLockpickModel(a_modelPath);
 
 			if (path != a_modelPath)
             {
-				logger::info("	Lockpick : {} -> {}", a_modelPath, path);
-			}
+                logger::info("	Lockpick : {} -> {}", a_modelPath, path);
+            }
 
-			return func(path.c_str(), a_modelHandle, a_traits);
+            return func(path.c_str(), a_modelHandle, a_traits);
 		}
 
         void RequestModel::Install()
@@ -129,6 +129,7 @@ namespace EudaMessageUpdate
     //EnterSoundEffectHook - AE / VR version
     std::uintptr_t EnterSoundEffectHookAE::thunk(char* soundPath)
     {
+
         if (Manager::GetSingleton()->allowEnterAudio)
         {
             return func(soundPath);
@@ -171,6 +172,12 @@ namespace EudaMessageUpdate
         currentManager->allowLockIntro = true;
         currentManager->shouldUpdateModel = false;
         const int value = currentManager->RecountAndUpdate();
+#if defined(SKYRIM_VR)
+        currentManager->HideLockpickModelVR(
+        currentManager->eudaLockpickVector.at(currentManager->bestLockpickIndex).path, false);
+#endif
+        //currentManager->HideLockpickModel(false);
+
         currentManager->shouldUpdateModel = false;
 
         return value;
@@ -189,11 +196,31 @@ namespace EudaMessageUpdate
 	std::int32_t CanOpenLockpickingMenuHook::thunk(RE::Character* character, RE::TESBoundObject* lockpick)
     {
         const auto currentManager = Manager::GetSingleton();
+
+        #if defined(SKYRIM_VR)
+        const std::string hidePath = currentManager->eudaLockpickVector.at(currentManager->bestLockpickIndex).path;
+        const int hideIndex = currentManager->bestLockpickIndex;
+        #endif
+
         const int value = currentManager->RecountAndUpdate();
 
         if (currentManager->shouldUpdateModel)
         {
+        #if defined(SKYRIM_VR)
+            if (hideIndex != currentManager->bestLockpickIndex)
+            {
+                currentManager->HideLockpickModelVR(hidePath, true);
+            }
+        #endif
+
+            //currentManager->HideLockpickModel(true);
             currentManager->ReloadLockpickModel();
+            //currentManager->HideLockpickModel(false);
+
+        #if defined(SKYRIM_VR)
+            currentManager->HideLockpickModelVR(currentManager->eudaLockpickVector.at(currentManager->bestLockpickIndex).path, false);
+        #endif
+
             currentManager->shouldUpdateModel = false;
         }
 

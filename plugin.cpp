@@ -225,15 +225,15 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
             EudaMessageUpdate::EnterLockIntroHook::Hook();
 
 			// VR doesn't have survival mode
-#ifdef SKYRIM_AE || SKYRIM_SE
+#if defined(SKYRIM_AE) || defined(SKYRIM_SE)
             EudaMessageUpdate::GetWeightHook::Hook();
 #endif
 
-#ifdef SKYRIM_AE || Skyrim_VR
+#if defined(SKYRIM_AE) || defined(Skyrim_VR)
             EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
 #endif
 
-#ifdef SKYRIM_SE
+#if defined(SKYRIM_SE)
             EudaMessageUpdate::EnterSoundEffectHookSE::Hook();
 #endif
 

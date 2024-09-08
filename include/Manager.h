@@ -43,6 +43,7 @@ public:
 	int RecountAndUpdate();
 	RE::BSResource::ErrorCode ReloadLockpickModel();
 	void HideLockpickModel(bool hide = true);
+    RE::BSResource::ErrorCode HideLockpickModelVR(std::string target, bool hide = true);
     bool TranslateLockLevel(RE::LOCK_LEVEL value, float& unmodifiedBreakSeconds, float& modifiedBreakSeconds);
     void TranslateLockLevelFallBack(RE::LOCK_LEVEL value, float& unmodifiedBreakSeconds, float& modifiedBreakSeconds);
     float CalculatePickBreak(RE::LOCK_LEVEL lockLevel);
