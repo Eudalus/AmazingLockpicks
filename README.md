@@ -50,7 +50,9 @@ To build for AE, SE, or VR, you must go into PCH.h and allow the specific versio
 Example for building AE:
 
 //#define SKYRIM_VR = TRUE
+
 //#define SKYRIM_SE = TRUE
+
 #define SKYRIM_AE = TRUE
 
 This is necessary because CMake is witchcraft.
