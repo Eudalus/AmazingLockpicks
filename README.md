@@ -24,6 +24,9 @@ brofield for [simpleini](https://github.com/brofield/simpleini)
 * [Address Library for SKSE](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
 	* Needed for SE/AE
 
+* [VR Address Library for SKSEVR](https://www.nexusmods.com/skyrimspecialedition/mods/58101)
+	* Needed for VR 
+
 # Building Requirements
 
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) (_the free Community edition_)
