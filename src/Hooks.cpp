@@ -87,7 +87,11 @@ namespace EudaMessageUpdate
         {
             auto& runtimeData = menu->GetRuntimeData();
 
-            runtimeData.lockRotate->Activate(0, 1, 1.0, -1.0, 0, true);
+            if (runtimeData.lockRotate)
+            {
+                runtimeData.lockRotate->Activate(0, 1, 1.0, -1.0, 0, true);
+            }
+
             runtimeData.lockRotCenter.x = currentManager->originalLockRotationCenter.x;
             runtimeData.lockRotCenter.y = currentManager->originalLockRotationCenter.y;
             runtimeData.lockRotCenter.z = currentManager->originalLockRotationCenter.z;
@@ -167,6 +171,7 @@ namespace EudaMessageUpdate
     std::int32_t TryBeginLockPickingHook::thunk(RE::Character* character, RE::TESBoundObject* lockpick)
 	{
         const auto currentManager = Manager::GetSingleton();
+        currentManager->lockpickingMenuState = currentManager->LOCKPICKING_MENU_STATE_OPENING;
         currentManager->allowEnterAudio = true;
         currentManager->allowLockSwap = true;
         currentManager->allowLockIntro = true;
@@ -179,7 +184,7 @@ namespace EudaMessageUpdate
         //currentManager->HideLockpickModel(false);
 
         currentManager->shouldUpdateModel = false;
-
+        currentManager->lockpickingMenuState = currentManager->LOCKPICKING_MENU_STATE_WILD;
         return value;
     }
 
@@ -201,7 +206,7 @@ namespace EudaMessageUpdate
         const std::string hidePath = currentManager->eudaLockpickVector.at(currentManager->bestLockpickIndex).path;
         const int hideIndex = currentManager->bestLockpickIndex;
         #endif
-
+        currentManager->lockpickingMenuState = currentManager->LOCKPICKING_MENU_STATE_UPDATING;
         const int value = currentManager->RecountAndUpdate();
 
         if (currentManager->shouldUpdateModel)
@@ -235,7 +240,7 @@ namespace EudaMessageUpdate
             runtimeData.pickBreakSeconds = currentManager->CalculatePickBreak(objectRef->GetLockLevel()) *
                                                          currentManager->CalculateQualityModifier();
         }
-
+        currentManager->lockpickingMenuState = currentManager->LOCKPICKING_MENU_STATE_WILD;
         return value;
     }
 

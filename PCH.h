@@ -2,8 +2,8 @@
 
 // CMake gives me depression
 
- //#define SKYRIM_VR = TRUE
-// #define SKYRIM_SE = TRUE
+//#define SKYRIM_VR = TRUE
+//#define SKYRIM_SE = TRUE
 #define SKYRIM_AE = TRUE
 
 #if defined(SKYRIM_VR)

@@ -79,12 +79,16 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
 	const auto currentManager = Manager::GetSingleton();
 
-	if (a_message->type == SKSE::MessagingInterface::kPostLoad)
+	if (a_message->type == SKSE::MessagingInterface::kPostLoad && currentManager->needsPostLoad)
 	{
 		currentManager->isPostLoadComplete = currentManager->LoadLocks();
+
+		currentManager->needsPostLoad = !currentManager->isPostLoadComplete;
 	}
-	else if (a_message->type == SKSE::MessagingInterface::kDataLoaded && currentManager->isPostLoadComplete)
+	else if (a_message->type == SKSE::MessagingInterface::kDataLoaded && currentManager->isPostLoadComplete && currentManager->needsDataLoad)
 	{
+		currentManager->needsDataLoad = false;
+
 		currentManager->PrepareLockpickSingleton();
 
 		RE::FormID        originalLockpickFormID = 0xA;
@@ -160,14 +164,6 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 		logger::info("Lockpick formids grabbed: {} --- should match total from .ini files (not enforced, check formids in esp files and editor in .ini files if discrepancy occurs)", ijk);
 
-		currentManager->eudaFormList =
-			RE::TESForm::LookupByEditorID<RE::BGSListForm>(currentManager->EudaFormListString);
-
-		if (!currentManager->eudaFormList)
-		{
-			logger::warn("Could not find formlist with editor: {}", currentManager->EudaFormListString);
-		}
-
 		const int vectorSize = currentManager->eudaLockpickVector.size();
 		bool      stillSearching = true;
 
@@ -208,39 +204,39 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		currentManager->UpdateBestLockpickFromIndex(0);
 
 	}
-	else if (a_message->type == SKSE::MessagingInterface::kPostPostLoad && currentManager->isPostLoadComplete)
+	else if (a_message->type == SKSE::MessagingInterface::kPostPostLoad && currentManager->isPostLoadComplete && currentManager->needsPostPostLoad)
 	{
-        if (currentManager->isPostLoadComplete)
-		{
-            Model::Lockpick::RequestModel::Install();
 
-            // EudaMessageUpdate::LockpickingMenuMessageHook::Hook();
-            // EudaMessageUpdate::EudaIMenuMessageHook::Hook();
-            // EudaMessageUpdate::LockpickingMenuMovieHook::Hook();
-            // EudaMessageUpdate::PlayerCharacterRemoveItem::Hook();
-            // EudaMessageUpdate::UpdatePickHealthHook::Hook();
-            EudaMessageUpdate::CanOpenLockpickingMenuHook::Hook();
-            EudaMessageUpdate::TryBeginLockPickingHook::Hook();
-            EudaMessageUpdate::UnknownSetupHook::Hook();
-            EudaMessageUpdate::EnterLockIntroHook::Hook();
+        currentManager->needsPostPostLoad = false;
 
-			// VR doesn't have survival mode
+        Model::Lockpick::RequestModel::Install();
+
+        // EudaMessageUpdate::LockpickingMenuMessageHook::Hook();
+        // EudaMessageUpdate::EudaIMenuMessageHook::Hook();
+        // EudaMessageUpdate::LockpickingMenuMovieHook::Hook();
+        // EudaMessageUpdate::PlayerCharacterRemoveItem::Hook();
+        // EudaMessageUpdate::UpdatePickHealthHook::Hook();
+        EudaMessageUpdate::CanOpenLockpickingMenuHook::Hook();
+        EudaMessageUpdate::TryBeginLockPickingHook::Hook();
+        EudaMessageUpdate::UnknownSetupHook::Hook();
+        EudaMessageUpdate::EnterLockIntroHook::Hook();
+
+		// VR doesn't have survival mode
 #if defined(SKYRIM_AE) || defined(SKYRIM_SE)
-            EudaMessageUpdate::GetWeightHook::Hook();
+        EudaMessageUpdate::GetWeightHook::Hook();
 #endif
 
 #if defined(SKYRIM_AE) || defined(Skyrim_VR)
-            EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
+        EudaMessageUpdate::EnterSoundEffectHookAE::Hook();
 #endif
 
 #if defined(SKYRIM_SE)
-            EudaMessageUpdate::EnterSoundEffectHookSE::Hook();
+        EudaMessageUpdate::EnterSoundEffectHookSE::Hook();
 #endif
 
-			// prevents reloading lock and shiv model each time LockpickingMenu's member variable init3DElements is set
-            // to false to dynamically load a different lockpick model
-            Model::Lock::RequestModel::Install();
-        }
+		// prevents reloading lock and shiv model each time LockpickingMenu's member variable init3DElements is set
+        // to false to dynamically load a different lockpick model
+        Model::Lock::RequestModel::Install();
 	}
 }
 
@@ -291,6 +287,52 @@ int RecountUniqueLockpicksNative(RE::StaticFunctionTag* tag)
 	return Manager::GetSingleton()->RecountAndUpdate();
 }
 
+int GetProtocolNative(RE::StaticFunctionTag* tag)
+{
+    return Manager::GetSingleton()->currentLockpickProtocol;
+}
+
+int IncrementProtocolNative(RE::StaticFunctionTag* tag)
+{
+    const auto manager = Manager::GetSingleton();
+
+	manager->currentLockpickProtocol = ((manager->currentLockpickProtocol + 1) % manager->lockpickUsageProtocol.size());
+
+	return manager->currentLockpickProtocol;
+}
+
+int SetProtocolNative(RE::StaticFunctionTag* tag, int protocol)
+{
+	return Manager::GetSingleton()->SetLockpickProtocol(protocol);
+}
+
+bool IsUsingFavoriteNative()
+{
+	return Manager::GetSingleton()->useFavoriteLockpick;
+}
+
+bool SetUsingFavoriteNative(bool useFavorite)
+{
+    Manager::GetSingleton()->useFavoriteLockpick = useFavorite;
+
+    return Manager::GetSingleton()->useFavoriteLockpick;
+}
+
+int RequestCurrentFavoriteIndexNative(RE::StaticFunctionTag* tag)
+{
+    return Manager::GetSingleton()->favoriteLockpickIndex;
+}
+
+int SetCurrentFavoriteIndexNative(RE::StaticFunctionTag* tag, int favoriteIndex)
+{
+    return Manager::GetSingleton()->SetFavoriteIndex(favoriteIndex);
+}
+
+int SaveSettingsNative(RE::StaticFunctionTag* tag)
+{
+	return 0;
+}
+
 bool EudaBindPapyrusFunctions(RE::BSScript::IVirtualMachine* vm)
 {
     vm->RegisterFunction("RequestCurrentIndexPapyrus", "EudaPapyrusNativeScript", RequestCurrentIndexNative);
@@ -299,9 +341,19 @@ bool EudaBindPapyrusFunctions(RE::BSScript::IVirtualMachine* vm)
 	vm->RegisterFunction("RequestLockpickQualityByIndexPapyrus", "EudaPapyrusNativeScript",RequestLockpickQualityByIndexNative);
 	vm->RegisterFunction("RecountUniqueLockpicksPapyrus", "EudaPapyrusNativeScript", RecountUniqueLockpicksNative);
 
+	vm->RegisterFunction("GetProtocolPapyrus", "EudaPapyrusNativeScript", GetProtocolNative);
+	vm->RegisterFunction("IncrementProtocolPapyrus", "EudaPapyrusNativeScript", IncrementProtocolNative);
+	vm->RegisterFunction("SetProtocolPapyrus", "EudaPapyrusNativeScript", SetProtocolNative);
+
+	vm->RegisterFunction("IsUsingFavoritePapyrus", "EudaPapyrusNativeScript", IsUsingFavoriteNative);
+	vm->RegisterFunction("SetUsingFavoritePapyrus", "EudaPapyrusNativeScript", SetUsingFavoriteNative);
+	vm->RegisterFunction("RequestCurrentFavoriteIndexPapyrus", "EudaPapyrusNativeScript", RequestCurrentFavoriteIndexNative);
+	vm->RegisterFunction("SetCurrentFavoriteIndexPapyrus", "EudaPapyrusNativeScript", SetCurrentFavoriteIndexNative);
+
+	// add on menu close write state to _ALMCM.ini file to load between saves
+	vm->RegisterFunction("SaveSettingsPapyrus", "EudaPapyrusNativeScript", SaveSettingsNative);
 	return true;
 }
-
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
