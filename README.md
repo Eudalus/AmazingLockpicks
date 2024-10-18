@@ -6,8 +6,7 @@
 
 # CommonLibSSE NG
 
-Because this uses [CommonLibSSE NG](https://github.com/CharmedBaryon/CommonLibSSE-NG), it supports Skyrim SE, AE, GOG, and ~~VR.~~
-VR support pending addresses.
+Because this uses [CommonLibSSE NG](https://github.com/CharmedBaryon/CommonLibSSE-NG), it supports Skyrim SE, AE, GOG, and VR.
 
 [CommonLibSSE NG](https://github.com/CharmedBaryon/CommonLibSSE-NG) is a fork of the popular [powerof3 fork](https://github.com/powerof3/CommonLibSSE) of the _original_ `CommonLibSSE` library created by [Ryan McKenzie](https://github.com/Ryan-rsm-McKenzie) in [2018](https://github.com/Ryan-rsm-McKenzie/CommonLibSSE/commit/224773c424bdb8e36c761810cdff0fcfefda5f4a).
 
@@ -24,6 +23,9 @@ brofield for [simpleini](https://github.com/brofield/simpleini)
 # User Requirements
 * [Address Library for SKSE](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
 	* Needed for SE/AE
+
+* [VR Address Library for SKSEVR](https://www.nexusmods.com/skyrimspecialedition/mods/58101)
+	* Needed for VR 
 
 # Building Requirements
 
@@ -45,6 +47,18 @@ Once you have Visual Studio 2022 installed, you can open this folder in basicall
 You may need to click `OK` on a few windows, but the project should automatically run CMake!
 
 It will _automatically_ download [CommonLibSSE NG](https://github.com/CharmedBaryon/CommonLibSSE-NG) and everything you need to get started making your new plugin!
+
+To build for AE, SE, or VR, you must go into PCH.h and allow the specific version's define while the other versions are commented out.
+
+Example for building AE:
+
+//#define SKYRIM_VR = TRUE
+
+//#define SKYRIM_SE = TRUE
+
+#define SKYRIM_AE = TRUE
+
+This is necessary because CMake is witchcraft.
 
 > 📜 other templates available at https://github.com/SkyrimScripting/SKSE_Templates
 
