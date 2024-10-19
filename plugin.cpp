@@ -91,11 +91,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 		currentManager->PrepareLockpickSingleton();
 
-		RE::FormID        originalLockpickFormID = 0xA;
-		RE::FormID        newLockpickFormID = 0xA;
+		RE::FormID        originalLockpickFormID = Data::DEFAULT_LOCKPICK_FORM_ID;
+        RE::FormID newLockpickFormID = Data::DEFAULT_LOCKPICK_FORM_ID;
 		RE::BSFixedString newString;
 
-		RE::TESObjectMISC* lockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
+		RE::TESObjectMISC* lockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(Data::DEFAULT_LOCKPICK_FORM_ID);
 		int                indexor = 0;
 
 		logger::info("{} --- LOCKPICK IS PLAYABLE: {}", indexor, lockpickObject->GetPlayable());
@@ -169,7 +169,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 		for (int i = 0; i < vectorSize && stillSearching; ++i)
 		{
-			if (currentManager->eudaLockpickVector.at(i).formid == 0xA)
+			if (currentManager->eudaLockpickVector.at(i).formid == Data::DEFAULT_LOCKPICK_FORM_ID)
 			{
 				stillSearching = false;
 			}
@@ -177,11 +177,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 		if (stillSearching)
 		{
-			logger::warn("Did not find original (0xA) lockpick from file. Inserting with default values.");
+			logger::warn("Did not find original ({}) lockpick from file. Inserting with default values.", Data::DEFAULT_LOCKPICK_FORM_ID);
 
 			Manager::EudaLockpickData tempData;
 			tempData.editor = "Lockpick";
-			tempData.formid = 0xA;
+            tempData.formid = Data::DEFAULT_LOCKPICK_FORM_ID;
 			tempData.name = "Iron Lockpick";
 			tempData.path = Data::defaultLockPick;
 			tempData.quality = currentManager->DEFAULT_LOCKPICK_QUALITY;
@@ -198,7 +198,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			}
 		}
 
-		currentManager->UpdateLockpickSingleton(lockpickObject, currentManager->eudaLockpickMap.at(0xA));
+		currentManager->UpdateLockpickSingleton(lockpickObject, currentManager->eudaLockpickMap.at(Data::DEFAULT_LOCKPICK_FORM_ID));
 
 		currentManager->RecountUniqueLockpickTotal();
 		currentManager->UpdateBestLockpickFromIndex(0);

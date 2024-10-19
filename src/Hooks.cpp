@@ -34,6 +34,17 @@ namespace Model
 		{
             const auto path = Manager::GetSingleton()->GetLockpickModel(a_modelPath);
 
+            RE::NiPointer<RE::NiNode> nPointer;
+            constexpr RE::BSModelDB::DBTraits::ArgsType args{};
+            const auto demandError = RE::BSModelDB::Demand(path.c_str(), nPointer, args);
+
+            if (demandError != RE::BSResource::ErrorCode::kNone)
+            {
+                logger::critical("  Invalid Lockpick : {}", path);
+
+                return func(a_modelPath, a_modelHandle, a_traits);
+            }
+
 			if (path != a_modelPath)
             {
                 logger::info("	Lockpick : {} -> {}", a_modelPath, path);

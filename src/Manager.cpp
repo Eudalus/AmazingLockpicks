@@ -61,13 +61,33 @@ RE::BSResource::ErrorCode Manager::ReloadLockpickModel()
 	return RE::BSResource::ErrorCode::kNone;
 }
 
+bool Manager::ActivateFavoriteLockpick()
+{
+	if (PreferFavoriteIndex())
+	{
+        RE::TESObjectMISC *currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[favoriteLockpickIndex].formid);
+
+		if (currentLockpickObject)
+		{
+			if (((*currentLockpickSingleton)->formID != currentLockpickObject->formID))
+			{
+                *currentLockpickSingleton = currentLockpickObject;
+                shouldUpdateModel = true;
+			}
+
+			return true;
+		}
+	}
+	return false;
+}
+
+/// <summary>
+/// Recounts the total number of lockpicks in player inventory.
+/// Prepares for lockpick model swapping when the lockpicking menu is opened, a lockpick is broken, or the SkyUI MCM 'menu' is opened.
+/// </summary>
+/// <returns> the total number of lockpicks in player inventory</returns>
 int Manager::RecountAndUpdate()
 {
-
-	// check if using favorite
-	// recount total
-	// return total
-
     // 0. Uses strongest by quality lockpick
     // 1. Uses weakest by quality lockpick
     // 2. Uses cheapest by gold value lockpick
@@ -95,34 +115,41 @@ int Manager::AcquireStrongestLockpick()
 {
     const auto player = RE::PlayerCharacter::GetSingleton();
     const int vectorSize = eudaLockpickVector.size();
-    bool stillSearching = true;
+    bool searchingForFirstLockpick = true;
+	bool allowModelUpdate;
     int currentLockpickCounter = 0;
     RE::TESObjectMISC *currentLockpickObject;
 
     uniqueLockpickTotal = 0;
 
+	allowModelUpdate = !ActivateFavoriteLockpick();
+
     for (int i = 0; i < vectorSize; ++i)
 	{
         currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(
-            eudaLockpickVector.at(i).formid);
+            eudaLockpickVector[i].formid);
         currentLockpickCounter = player->GetItemCount(currentLockpickObject);
 
-        if ((currentLockpickCounter >= 1) && stillSearching)
+        if ((currentLockpickCounter >= 1) && searchingForFirstLockpick)
 		{
             if ((bestLockpickIndex != i) || ((*currentLockpickSingleton)->formID != currentLockpickObject->formID))
 			{
-                *currentLockpickSingleton = currentLockpickObject;
                 bestLockpickIndex = i;
-                shouldUpdateModel = true;
+                
+				if (allowModelUpdate)
+				{
+                    *currentLockpickSingleton = currentLockpickObject;
+                    shouldUpdateModel = true;
+				}
             }
 
-            stillSearching = false;
+            searchingForFirstLockpick = false;
         }
 
         uniqueLockpickTotal += currentLockpickCounter;
     }
 
-    if (stillSearching)
+    if (searchingForFirstLockpick) // should account for favorite also
 	{
         RevertDefaultLockpick();
     }
@@ -134,35 +161,42 @@ int Manager::AcquireWeakestLockpick()
 {
     const auto player = RE::PlayerCharacter::GetSingleton();
     const int vectorSize = eudaLockpickVector.size();
-    bool stillSearching = true;
+    bool searchingForFirstLockpick = true;
+    bool allowModelUpdate;
     int currentLockpickCounter = 0;
     RE::TESObjectMISC *currentLockpickObject;
 
     uniqueLockpickTotal = 0;
 
+    allowModelUpdate = !ActivateFavoriteLockpick();
+
     for (int i = (vectorSize - 1); i >= 0; --i)
 	{
         currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(
-            eudaLockpickVector.at(i).formid);
+            eudaLockpickVector[i].formid);
         currentLockpickCounter = player->GetItemCount(currentLockpickObject);
 
-        if (currentLockpickCounter >= 1 && stillSearching)
+        if (currentLockpickCounter >= 1 && searchingForFirstLockpick)
 		{
             if ((bestLockpickIndex != i) || ((*currentLockpickSingleton)->formID !=
                                               currentLockpickObject->formID))
 			{
-                *currentLockpickSingleton = currentLockpickObject;
                 bestLockpickIndex = i;
-                shouldUpdateModel = true;
+
+				if (allowModelUpdate)
+				{
+                    *currentLockpickSingleton = currentLockpickObject;
+                    shouldUpdateModel = true;
+				}
             }
 
-            stillSearching = false;
+            searchingForFirstLockpick = false;
         }
 
         uniqueLockpickTotal += currentLockpickCounter;
     }
 
-    if (stillSearching)
+    if (searchingForFirstLockpick)
 	{
         RevertDefaultLockpick();
     }
@@ -173,34 +207,41 @@ int Manager::AcquireWeakestLockpick()
 int Manager::AcquireCheapestLockpick()
 {
     const auto player = RE::PlayerCharacter::GetSingleton();
-    const int vectorSize = std::min(eudaLockpickVector.size(), eudaLockpickGoldValueVector.size());
-    bool stillSearching = true;
+    const int vectorSize = eudaLockpickVector.size();
+    bool searchingForFirstLockpick = true;
+    bool allowModelUpdate;
     int currentLockpickCounter = 0;
     RE::TESObjectMISC *currentLockpickObject;
 
     uniqueLockpickTotal = 0;
 
+    allowModelUpdate = !ActivateFavoriteLockpick();
+
 	for (int i = 0; i < vectorSize; ++i)
 	{
-        currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(eudaLockpickGoldValueVector[i].index).formid);
+        currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[eudaLockpickGoldValueVector[i].index].formid);
         currentLockpickCounter = player->GetItemCount(currentLockpickObject);
 
-        if (currentLockpickCounter >= 1 && stillSearching)
+        if (currentLockpickCounter >= 1 && searchingForFirstLockpick)
 		{
             if ((bestLockpickIndex != eudaLockpickGoldValueVector[i].index) || ((*currentLockpickSingleton)->formID != currentLockpickObject->formID))
 			{
-                *currentLockpickSingleton = currentLockpickObject;
                 bestLockpickIndex = eudaLockpickGoldValueVector[i].index;
-                shouldUpdateModel = true;
+
+				if (allowModelUpdate)
+				{
+                    *currentLockpickSingleton = currentLockpickObject;
+                    shouldUpdateModel = true;
+				}
             }
 
-            stillSearching = false;
+            searchingForFirstLockpick = false;
         }
 
         uniqueLockpickTotal += currentLockpickCounter;
 	}
 
-	if (stillSearching)
+	if (searchingForFirstLockpick)
 	{
         RevertDefaultLockpick();
     }
@@ -210,35 +251,42 @@ int Manager::AcquireCheapestLockpick()
 
 int Manager::AcquireExpensiveLockpick()
 {
-	const auto player = RE::PlayerCharacter::GetSingleton();
-    const int vectorSize = std::min(eudaLockpickVector.size(), eudaLockpickGoldValueVector.size());
-    bool stillSearching = true;
+    const auto player = RE::PlayerCharacter::GetSingleton();
+    const int vectorSize = eudaLockpickVector.size();
+    bool searchingForFirstLockpick = true;
+    bool allowModelUpdate;
     int currentLockpickCounter = 0;
     RE::TESObjectMISC *currentLockpickObject;
 
     uniqueLockpickTotal = 0;
 
+    allowModelUpdate = !ActivateFavoriteLockpick();
+
 	for (int i = (vectorSize - 1); i >= 0; --i)
 	{
-        currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(eudaLockpickGoldValueVector[i].index).formid);
+        currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[eudaLockpickGoldValueVector[i].index].formid);
         currentLockpickCounter = player->GetItemCount(currentLockpickObject);
 
-        if (currentLockpickCounter >= 1 && stillSearching)
+        if (currentLockpickCounter >= 1 && searchingForFirstLockpick)
 		{
             if ((bestLockpickIndex != eudaLockpickGoldValueVector[i].index) || ((*currentLockpickSingleton)->formID != currentLockpickObject->formID))
 			{
-                *currentLockpickSingleton = currentLockpickObject;
                 bestLockpickIndex = eudaLockpickGoldValueVector[i].index;
-                shouldUpdateModel = true;
+
+				if (allowModelUpdate)
+				{
+                    *currentLockpickSingleton = currentLockpickObject;
+                    shouldUpdateModel = true;
+				}
             }
 
-            stillSearching = false;
+            searchingForFirstLockpick = false;
         }
 
         uniqueLockpickTotal += currentLockpickCounter;
 	}
 
-	if (stillSearching)
+	if (searchingForFirstLockpick)
 	{
         RevertDefaultLockpick();
     }
@@ -251,7 +299,7 @@ int Manager::AcquireRandomOnceLockpick()
 	// check to see if menu is opening, single break, or ran out and need to use a different lockpick
 	if (lockpickingMenuState == LOCKPICKING_MENU_STATE_UPDATING) // 1
 	{
-        if (RE::PlayerCharacter::GetSingleton()->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(bestLockpickIndex).formid)) >= 1)
+        if (RE::PlayerCharacter::GetSingleton()->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[bestLockpickIndex].formid)) >= 1)
 		{
 			// updating state and player still has current lockpicks left, just recount
             return RecountUniqueLockpickTotal();
@@ -271,37 +319,44 @@ int Manager::AcquireRandomOnceLockpick()
 
 int Manager::AcquireRandomAllLockpick()
 {
-	const auto player = RE::PlayerCharacter::GetSingleton();
-    const int vectorSize = std::min(eudaLockpickVector.size(), eudaLockpickRandomVector.size());
-    bool stillSearching = true;
+    const auto player = RE::PlayerCharacter::GetSingleton();
+    const int vectorSize = eudaLockpickVector.size();
+    bool searchingForFirstLockpick = true;
+    bool allowModelUpdate;
     int currentLockpickCounter = 0;
     RE::TESObjectMISC *currentLockpickObject;
 
     uniqueLockpickTotal = 0;
 
+    allowModelUpdate = !ActivateFavoriteLockpick();
+
 	ShuffleRandomVector();
 
 	for (int i = 0; i < vectorSize; ++i)
 	{
-        currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(eudaLockpickRandomVector[i]).formid);
+        currentLockpickObject = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[eudaLockpickRandomVector[i]].formid);
         currentLockpickCounter = player->GetItemCount(currentLockpickObject);
 
-		if (currentLockpickCounter >= 1 && stillSearching)
+		if (currentLockpickCounter >= 1 && searchingForFirstLockpick)
 		{
             if ((bestLockpickIndex != eudaLockpickRandomVector[i]) || ((*currentLockpickSingleton)->formID != currentLockpickObject->formID))
 			{
-                *currentLockpickSingleton = currentLockpickObject;
                 bestLockpickIndex = eudaLockpickRandomVector[i];
-                shouldUpdateModel = true;
+
+				if (allowModelUpdate)
+				{
+                    *currentLockpickSingleton = currentLockpickObject;
+                    shouldUpdateModel = true;
+				}
             }
 
-            stillSearching = false;
+            searchingForFirstLockpick = false;
         }
 
         uniqueLockpickTotal += currentLockpickCounter;
 	}
 
-	if (stillSearching)
+	if (searchingForFirstLockpick)
 	{
         RevertDefaultLockpick();
     }
@@ -312,9 +367,9 @@ int Manager::AcquireRandomAllLockpick()
 int Manager::RevertDefaultLockpick()
 {
     // set to default
-    *currentLockpickSingleton = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
+    *currentLockpickSingleton = RE::TESForm::LookupByID<RE::TESObjectMISC>(Data::DEFAULT_LOCKPICK_FORM_ID);
     bestLockpickIndex = eudaLockpickMap.at((*currentLockpickSingleton)->formID);
-    // shouldUpdateModel = true; // debatable
+    //shouldUpdateModel = true; // debatable
 }
 
 // prefer PrepareSecondaryVectors function
@@ -374,7 +429,7 @@ int Manager::RecountUniqueLockpickTotal()
 
 	for (int i = 0; i < vectorSize; ++i)
 	{
-		uniqueLockpickTotal += player->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(i).formid));
+		uniqueLockpickTotal += player->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[i].formid));
 	}
 
 	return uniqueLockpickTotal;
@@ -404,7 +459,7 @@ int Manager::UpdateLockpickSingleton(RE::TESObjectMISC* lockpickValue, int bestI
 	}
 	else
 	{
-		*currentLockpickSingleton = RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA);
+		*currentLockpickSingleton = RE::TESForm::LookupByID<RE::TESObjectMISC>(Data::DEFAULT_LOCKPICK_FORM_ID);
 		bestLockpickIndex = eudaLockpickMap.at((*currentLockpickSingleton)->formID);
 	}
 
@@ -418,7 +473,7 @@ int Manager::UpdateBestLockpickFromIndex(int indexValue = 0)
 
 	while (indexValue >= 0 && indexValue < vectorSize)
 	{
-		const auto currentItem = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector.at(indexValue).formid);
+		const auto currentItem = RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[indexValue].formid);
 
 		if (currentItem && playerCharacter->GetItemCount(currentItem) >= 1)
 		{
@@ -428,7 +483,7 @@ int Manager::UpdateBestLockpickFromIndex(int indexValue = 0)
 		++indexValue;
 	}
 
-	return UpdateLockpickSingleton(RE::TESForm::LookupByID<RE::TESObjectMISC>(0xA), eudaLockpickMap.at(0xA));
+	return UpdateLockpickSingleton(RE::TESForm::LookupByID<RE::TESObjectMISC>(Data::DEFAULT_LOCKPICK_FORM_ID), eudaLockpickMap.at(Data::DEFAULT_LOCKPICK_FORM_ID));
 }
 
 
@@ -586,7 +641,7 @@ float Manager::CalculateQualityModifier()
 {
 	if (bestLockpickIndex >= 0 && bestLockpickIndex < eudaLockpickVector.size())
 	{
-        return (eudaLockpickVector.at(bestLockpickIndex).quality / ((float)DEFAULT_LOCKPICK_QUALITY));
+        return (eudaLockpickVector[bestLockpickIndex].quality / ((float)DEFAULT_LOCKPICK_QUALITY));
 	}
 	else
 	{
@@ -710,17 +765,36 @@ bool Manager::LoadLocks()
 	return !eudaLockpickVector.empty();
 }
 
+bool Manager::PreferFavoriteIndex()
+{
+    return useFavoriteLockpick && ((0 >= favoriteLockpickIndex) && (favoriteLockpickIndex < eudaLockpickVector.size())) && (RE::PlayerCharacter::GetSingleton()->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[favoriteLockpickIndex].formid)) >= 1);
+}
+
+bool Manager::GoodBestIndex()
+{
+	return ((0 >= bestLockpickIndex) && (bestLockpickIndex < eudaLockpickVector.size()));
+}
+
 std::string Manager::GetLockpickModel(const char* a_fallbackPath)
 {
 
     std::string path(a_fallbackPath);
 
-    if (path == Data::skeletonKey) {
+    if (path == Data::skeletonKey)
+	{
         return path;
     }
 
-    // return EudaRealUpdateLock();
-    return eudaLockpickVector.at(bestLockpickIndex).path;
+	if (PreferFavoriteIndex())
+	{
+        return eudaLockpickVector[favoriteLockpickIndex].path;
+    }
+	else if (GoodBestIndex())
+	{
+        return eudaLockpickVector[bestLockpickIndex].path;
+	}
+
+    return path;
 }
 
 // prefer PrepareSecondaryVectors function
@@ -771,6 +845,7 @@ int Manager::SetFavoriteIndex(int favoriteIndex)
 	}
 	else
 	{
+		useFavoriteLockpick = false;
         favoriteLockpickIndex = INVALID_LOCKPICK_INDEX;
 	}
 

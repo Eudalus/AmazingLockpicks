@@ -45,6 +45,9 @@ public:
     int SetFavoriteIndex(int favoriteIndex);
     int GetLockpickProtocol();
     int SetLockpickProtocol(int protocol);
+    bool PreferFavoriteIndex();
+    bool GoodBestIndex();
+    bool ActivateFavoriteLockpick();
     
 	std::string GetLockpickModel(const char* a_fallbackPath);
 
@@ -103,6 +106,7 @@ public:
 		float       weight = 0;
 		int			goldValue;
 		std::string name;
+        int			priority = 0; // for determining which _EAL.ini file's data should be used in the case of conflicts
         
 		bool operator<(const EudaLockpickData other)
 		{
@@ -183,8 +187,8 @@ public:
     const float FALLBACK_LOCKPICK_BREAK_SKILL_MULT = 0.005f;
 	const float FALLBACK_LOCKPICK_QUALITY_MODIFIER = 1.0f;
 	const int DEFAULT_LOCKPICK_PROTOCOL = 0; // strongest
-
-
+	const int DEFAULT_LOCKPICK_DATA_PRIORITY = 0;
+	
 	// 0. Uses strongest by quality lockpick
 	// 1. Uses weakest by quality lockpick
 	// 2. Uses cheapest by gold value lockpick
@@ -192,4 +196,14 @@ public:
 	// 4. Acquires a random lockpick on lockpicking menu open and again when player runs out of current lockpick
 	// 5. Acquires a random lockpick on lockpicking menu open and again each time the player breaks the current lockpick
     const std::vector<std::string> lockpickUsageProtocol{"Strongest", "Weakest", "Cheapest", "Expensive", "Random Once", "Random All"};
+
+	// Associated MCM display
+    const std::vector<std::string> lockpickProtocolDisplay {
+        "Default, will use the strongest lockpick based on quality.",
+		"Will use the weakest lockpick based on quality.",
+		"Will use the cheapest lockpick based on gold value.",
+		"Will use the most expensive lockpick based on gold value",
+		"Will randomly choose a lockpick when the lockpicking menu is opened or when you run out of the current lockpick.",
+        "Will randomly choose a lockpick when the lockpicking menus is opened and each time a single lockpick is broken."
+    }
 };
