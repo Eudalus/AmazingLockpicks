@@ -207,7 +207,7 @@ int Manager::AcquireWeakestLockpick()
 int Manager::AcquireCheapestLockpick()
 {
     const auto player = RE::PlayerCharacter::GetSingleton();
-    const int vectorSize = eudaLockpickVector.size();
+    const int vectorSize = std::min(eudaLockpickVector.size(), eudaLockpickGoldValueVector.size());
     bool searchingForFirstLockpick = true;
     bool allowModelUpdate;
     int currentLockpickCounter = 0;
@@ -252,7 +252,7 @@ int Manager::AcquireCheapestLockpick()
 int Manager::AcquireExpensiveLockpick()
 {
     const auto player = RE::PlayerCharacter::GetSingleton();
-    const int vectorSize = eudaLockpickVector.size();
+    const int vectorSize = std::min(eudaLockpickVector.size(), eudaLockpickGoldValueVector.size());
     bool searchingForFirstLockpick = true;
     bool allowModelUpdate;
     int currentLockpickCounter = 0;
@@ -299,7 +299,7 @@ int Manager::AcquireRandomOnceLockpick()
 	// check to see if menu is opening, single break, or ran out and need to use a different lockpick
 	if (lockpickingMenuState == LOCKPICKING_MENU_STATE_UPDATING) // 1
 	{
-        if (RE::PlayerCharacter::GetSingleton()->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[bestLockpickIndex].formid)) >= 1)
+        if (PreferFavoriteIndex() || (RE::PlayerCharacter::GetSingleton()->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[bestLockpickIndex].formid)) >= 1))
 		{
 			// updating state and player still has current lockpicks left, just recount
             return RecountUniqueLockpickTotal();
@@ -320,7 +320,7 @@ int Manager::AcquireRandomOnceLockpick()
 int Manager::AcquireRandomAllLockpick()
 {
     const auto player = RE::PlayerCharacter::GetSingleton();
-    const int vectorSize = eudaLockpickVector.size();
+    const int vectorSize = std::min(eudaLockpickVector.size(), eudaLockpickRandomVector.size());
     bool searchingForFirstLockpick = true;
     bool allowModelUpdate;
     int currentLockpickCounter = 0;
@@ -767,12 +767,12 @@ bool Manager::LoadLocks()
 
 bool Manager::PreferFavoriteIndex()
 {
-    return useFavoriteLockpick && ((0 >= favoriteLockpickIndex) && (favoriteLockpickIndex < eudaLockpickVector.size())) && (RE::PlayerCharacter::GetSingleton()->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[favoriteLockpickIndex].formid)) >= 1);
+    return useFavoriteLockpick && ((favoriteLockpickIndex >= 0) && (favoriteLockpickIndex < eudaLockpickVector.size())) && (RE::PlayerCharacter::GetSingleton()->GetItemCount(RE::TESForm::LookupByID<RE::TESObjectMISC>(eudaLockpickVector[favoriteLockpickIndex].formid)) >= 1);
 }
 
 bool Manager::GoodBestIndex()
 {
-	return ((0 >= bestLockpickIndex) && (bestLockpickIndex < eudaLockpickVector.size()));
+    return ((bestLockpickIndex >= 0) && (bestLockpickIndex < eudaLockpickVector.size()));
 }
 
 std::string Manager::GetLockpickModel(const char* a_fallbackPath)
